@@ -161,7 +161,7 @@ async function doLogin(){
     const {data,error}=await SB.auth.signInWithPassword({email,password:p});
     if(error) throw error;
     if(!x){x={u:u,n:u,r:'Usuário',email};USERS.push(x);localStorage.setItem(USERKEY,JSON.stringify(USERS));}
-    CURRENT={...x,authUserId:data.user.id,email:data.user.email};
+    CURRENT={...x,authUserId:data.user.id,email:data.user.email,r:data.user.email==='cabanha.piterini@gmail.com'?'Administrador':x.r};
     sessionStorage.setItem('CPIT_LOGIN',u);
     openApp();
     await loadCloudState();
