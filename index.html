@@ -185,7 +185,7 @@ async function loadCloudState(){
 
   }catch(err){
     console.error(err);
-    loginErr.textContent='E-mail ou senha incorretos.';
+   loginErr.textContent='ERRO: '+(err?.message||err);
   }
 }login.style.display='none';app.style.display='block';who.textContent=CURRENT.n||CURRENT.u;avatar.textContent=(CURRENT.n||CURRENT.u).slice(0,1).toUpperCase();renderAll()}
 async function logout(){try{await SB.auth.signOut()}catch(e){}sessionStorage.removeItem('CPIT_LOGIN');location.reload()}
