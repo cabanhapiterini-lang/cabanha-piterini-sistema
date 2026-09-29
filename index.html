@@ -129,9 +129,16 @@ async function save(){
     const {data:check,error:checkError}=await SB.from('cabanha_data').select('data,updated_at').eq('user_id',CURRENT.authUserId).maybeSingle();
     if(checkError) throw checkError;
     if(!check?.data) throw new Error('O banco não devolveu os dados após o salvamento.');
-    const savedCount=JSON.stringify(check.data);
-    const localCount=JSON.stringify(DB);
-    if(savedCount!==localCount) throw new Error('O banco respondeu, mas os dados conferidos não são iguais aos dados enviados.');
+    // O Supabase/Postgres pode reorganizar as chaves de objetos JSONB.
+    // Por isso a conferência precisa comparar o conteúdo, e não a ordem das chaves.
+    function normalizarParaConferencia(v){
+      if(Array.isArray(v)) return v.map(normalizarParaConferencia);
+      if(v && typeof v==='object') return Object.keys(v).sort().reduce((o,k)=>{o[k]=normalizarParaConferencia(v[k]);return o},{});
+      return v;
+    }
+    const savedCheck=JSON.stringify(normalizarParaConferencia(check.data));
+    const localCheck=JSON.stringify(normalizarParaConferencia(DB));
+    if(savedCheck!==localCheck) throw new Error('O banco respondeu, mas os dados conferidos não são iguais aos dados enviados.');
     CLOUD_READY=true;
     setSaveStatus('ok','Salvo e conferido com sucesso!','Os dados foram gravados no Supabase e conferidos novamente.');
     localStorage.setItem('CPIT_LAST_SAVE',JSON.stringify({at:check.updated_at||now,ok:true}));
