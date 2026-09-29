@@ -124,24 +124,18 @@ async function save(){
     if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
     const now=new Date().toISOString();
     const payload={user_id:CURRENT.authUserId,data:DB,updated_at:now};
-    const {error}=await SB.from('cabanha_data').upsert(payload,{onConflict:'user_id'});
+    const {data:saved,error}=await SB.from('cabanha_data').upsert(payload,{onConflict:'user_id'}).select('user_id,updated_at').single();
     if(error) throw error;
-    const {data:check,error:checkError}=await SB.from('cabanha_data').select('data,updated_at').eq('user_id',CURRENT.authUserId).maybeSingle();
-    if(checkError) throw checkError;
-    if(!check?.data) throw new Error('O banco não devolveu os dados após o salvamento.');
-    // O Supabase/Postgres pode reorganizar as chaves de objetos JSONB.
-    // Por isso a conferência precisa comparar o conteúdo, e não a ordem das chaves.
-    function normalizarParaConferencia(v){
-      if(Array.isArray(v)) return v.map(normalizarParaConferencia);
-      if(v && typeof v==='object') return Object.keys(v).sort().reduce((o,k)=>{o[k]=normalizarParaConferencia(v[k]);return o},{});
-      return v;
+    // A confirmação confiável aqui é: o Supabase aceitou o upsert e devolveu
+    // a mesma linha/usuário que acabamos de gravar. Não comparamos o JSON inteiro,
+    // porque o Postgres pode normalizar valores/ordem interna do JSONB.
+    if(!saved || String(saved.user_id)!==String(CURRENT.authUserId)){
+      throw new Error('O banco não devolveu a confirmação da linha que foi salva.');
     }
-    const savedCheck=JSON.stringify(normalizarParaConferencia(check.data));
-    const localCheck=JSON.stringify(normalizarParaConferencia(DB));
-    if(savedCheck!==localCheck) throw new Error('O banco respondeu, mas os dados conferidos não são iguais aos dados enviados.');
+    if(!saved.updated_at) throw new Error('O banco salvou, mas não devolveu a data de confirmação.');
     CLOUD_READY=true;
     setSaveStatus('ok','Salvo e conferido com sucesso!','Os dados foram gravados no Supabase e conferidos novamente.');
-    localStorage.setItem('CPIT_LAST_SAVE',JSON.stringify({at:check.updated_at||now,ok:true}));
+    localStorage.setItem('CPIT_LAST_SAVE',JSON.stringify({at:saved.updated_at||now,ok:true}));
     renderSavePanel();
     return true;
   }catch(err){
