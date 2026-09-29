@@ -187,7 +187,7 @@ async function loadCloudState(){
     console.error(err);
    loginErr.textContent='ERRO: '+(err?.message||err);
   }
-}login.style.display='none';app.style.display='block';who.textContent=CURRENT.n||CURRENT.u;avatar.textContent=(CURRENT.n||CURRENT.u).slice(0,1).toUpperCase();renderAll()}
+  login.style.display='none';app.style.display='block';who.textContent=CURRENT.n||CURRENT.u;avatar.textContent=(CURRENT.n||CURRENT.u).slice(0,1).toUpperCase();renderAll()}
 async function logout(){try{await SB.auth.signOut()}catch(e){}sessionStorage.removeItem('CPIT_LOGIN');location.reload()}
 (async()=>{let u=sessionStorage.getItem('CPIT_LOGIN');if(u){let {data}=await SB.auth.getSession();let x=USERS.find(a=>a.u===u);if(x&&data?.session?.user){CURRENT={...x,authUserId:data.session.user.id,email:data.session.user.email};openApp();await loadCloudState();}}})()
 function show(id,btn){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='relatorios')renderReportHistory()}
