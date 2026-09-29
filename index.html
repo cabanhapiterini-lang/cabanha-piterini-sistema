@@ -162,7 +162,7 @@ async function doLogin(){
     if(error) throw error;
     if(!x){x={u:u,n:u,r:'Usuário',email};USERS.push(x);localStorage.setItem(USERKEY,JSON.stringify(USERS));}
     CURRENT={...x,authUserId:data.user.id,email:data.user.email,r:data.user.email==='cabanha.piterini@gmail.com'?'Administrador':x.r};
-    sessionStorage.setItem('CPIT_LOGIN',u);
+    sessionStorage.setItem('CPIT_LOGIN',JSON.stringify(CURRENT));
     openApp();
     await loadCloudState();
   }catch(err){
