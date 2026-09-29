@@ -124,7 +124,7 @@ async function save(){
     if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
     const now=new Date().toISOString();
     const payload={user_id:CURRENT.authUserId,data:DB,updated_at:now};
-    const {data:saved,error}=await SB.from('cabanha_data').upsert(payload,{onConflict:'user_id'}).select('user_id,updated_at').single();
+   const {data,error}=await SB.from('cabanha_data').select('data,updated_at').eq('user_id',CURRENT.authUserId).order('updated_at',{ascending:false}).limit(1).maybeSingle();
     if(error) throw error;
     // A confirmação confiável aqui é: o Supabase aceitou o upsert e devolveu
     // a mesma linha/usuário que acabamos de gravar. Não comparamos o JSON inteiro,
