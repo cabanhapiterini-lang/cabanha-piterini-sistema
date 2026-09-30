@@ -183,15 +183,21 @@ async function loadCloudState(){
   if(CLOUD_LOADING || !CURRENT?.authUserId) return;
   CLOUD_LOADING=true;
   try{
-    const {data,error}=await SB.from('cabanha_data').select('data').eq('user_id',CURRENT.authUserId).maybeSingle();
+    const {data,error}=await SB.from('cabanha_data').select('data').eq('cabanha_id','CABANHA_PITERINI').maybeSingle();
     if(error) throw error;
     if(data?.data){
       DB=data.data;
       localStorage.setItem(DBKEY,JSON.stringify(DB));
     }else{
       // Primeiro acesso: envia os dados que já estavam no navegador para a nuvem.
-      const {error:upErr}=await SB.from('cabanha_data').upsert({user_id:CURRENT.authUserId,data:DB,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-      if(upErr) throw upErr;
+     const {error:upErr}=await SB.from('cabanha_data').upsert({
+  user_id:CURRENT.authUserId,
+  cabanha_id:'CABANHA_PITERINI',
+  data:DB,
+  updated_at:new Date().toISOString()
+},{onConflict:'cabanha_id'});
+
+if(upErr) throw upErr;
     }
     CLOUD_READY=true;
   }catch(err){
