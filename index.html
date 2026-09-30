@@ -123,17 +123,21 @@ async function save(){
     setSaveStatus('wait','Salvando na nuvem...','Enviando os dados para o Supabase.');
     if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
     const now=new Date().toISOString();
-    const payload={user_id:CURRENT.authUserId,data:DB,updated_at:now};
+    const payload={
+  user_id:CURRENT.authUserId,
+  cabanha_id:'CABANHA_PITERINI',
+  data:DB,
+  updated_at:now
+};
    const {data:saved,error}=await SB
   .from('cabanha_data')
-  .upsert(payload,{onConflict:'user_id'})
+  .upsert(payload,{onConflict:'cabanha_id'})
   .select('user_id,updated_at')
   .single();
 
 if(error) throw error;
-
-if(!saved || String(saved.user_id)!==String(CURRENT.authUserId)){
-  throw new Error('O banco não devolveu a confirmação da linha que foi salva.');
+if(!saved){
+  throw new Error('O banco não devolveu a confirmação da linha da Cabanha Piterini.');
 }
 
 if(!saved.updated_at){
