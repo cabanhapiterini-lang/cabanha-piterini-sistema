@@ -91,8 +91,16 @@
     </div>
     <button class="btn primary" onclick="openForm('event')">+ Novo manejo</button>
   </div>
+<div class="card" style="margin-bottom:13px">
+  <div class="top" style="margin-bottom:12px">
+    <button class="btn light" onclick="mudarMesManejo(-1)">‹</button>
+    <h2 id="manejoMes" style="margin:0;text-transform:capitalize"></h2>
+    <button class="btn light" onclick="mudarMesManejo(1)">›</button>
+  </div>
 
-  <div class="grid" id="manejoMetrics"></div>
+  <div id="manejoCalendario" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div>
+</div>
+</div>  <div class="grid" id="manejoMetrics"></div>
 
   <div class="toolbar">
     <input id="manejoQ" placeholder="🔎 Buscar manejo, animal, responsável..." oninput="renderManejo()">
@@ -342,12 +350,69 @@ document.getElementById('events').innerHTML=html||'<div class="muted">Nenhum eve
         '<td><span class="status '+(x.status==='Concluído'?'ok':'warn')+'">'+esc(x.status||'Pendente')+'</span></td>'+
         '<td>'+esc(x.obs||'—')+'</td>'+
         '<td class="actions-cell">'+
-          '<button class="btn light" onclick="edit('+i+')">Editar</button>'+
+          '<button class="btn light" onclick="editEvent('+i+')">Editar</button>'+
           '<button class="btn danger" onclick="deleteEvent('+i+')">Excluir</button>'+
         '</td>'+
       '</tr>';
     }).join('') ||
     '<tr><td colspan="8">Nenhum manejo registrado.</td></tr>';
+}
+  let manejoMesAtual=new Date();
+manejoMesAtual.setDate(1);
+
+function mudarMesManejo(direcao){
+  manejoMesAtual.setMonth(manejoMesAtual.getMonth()+direcao);
+  renderManejoCalendario();
+}
+
+function renderManejoCalendario(){
+  let ano=manejoMesAtual.getFullYear();
+  let mes=manejoMesAtual.getMonth();
+
+  manejoMes.textContent=new Date(ano,mes,1).toLocaleDateString('pt-BR',{
+    month:'long',
+    year:'numeric'
+  });
+
+  let primeiro=new Date(ano,mes,1);
+  let ultimo=new Date(ano,mes+1,0);
+  let inicio=primeiro.getDay();
+  let total=ultimo.getDate();
+
+  let nomes=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  let html=nomes.map(d=>
+    '<div style="font-weight:700;text-align:center;padding:8px">'+d+'</div>'
+  ).join('');
+
+  for(let i=0;i<inicio;i++){
+    html+='<div></div>';
+  }
+
+  for(let dia=1;dia<=total;dia++){
+    let data=ano+'-'+String(mes+1).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+
+    let eventos=(Array.isArray(DB.events)?DB.events:[])
+      .filter(x=>String(x.data||'')===data);
+
+    let conteudo='<b style="font-size:14px">'+dia+'</b>';
+
+    if(eventos.length){
+      conteudo+='<div style="margin-top:5px;font-size:11px">'+
+        eventos.map(x=>
+          '<div style="padding:3px 4px;margin-top:3px;border-radius:5px;background:'+
+          (x.status==='Concluído'?'#dff3e8':'#fff3cd')+
+          '">'+esc(x.titulo||'Manejo')+'</div>'
+        ).join('')+
+        '</div>';
+    }
+
+    html+='<div style="min-height:85px;border:1px solid var(--line);border-radius:8px;padding:7px;background:#fff">'+
+      conteudo+
+      '</div>';
+  }
+
+  manejoCalendario.innerHTML=html;
 }
 function editEvent(i){openForm('event',DB.events[i]);modalForm.dataset.edit='event';modalForm.dataset.index=i}
 function deleteEvent(i){if(confirm('Excluir este próximo evento?')){DB.events.splice(i,1);save();renderAll()}}
@@ -555,5 +620,5 @@ function reportPerf(obj){return `<div class="tablewrap"><table><thead><tr><th>No
 function renderReportHistory(){reportHistory.innerHTML=REPORTS.map(r=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${new Date(r.date).toLocaleString('pt-BR')}</b> · ${esc(r.type)} · ${fmtDate(r.start)} a ${fmtDate(r.end)} <button class="btn light" style="float:right" onclick="openSavedReport(${r.id})">Abrir</button></div>`).join('')||'<span class="muted">Nenhum relatório salvo.</span>'}
 function openSavedReport(id){let r=REPORTS.find(x=>x.id===id);if(r)reportArea.innerHTML=r.html}
 function saveReportFile(){if(!reportArea.innerHTML.trim())return alert('Gere um relatório primeiro.');let blob=new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Relatório Cabanha Piterini</title><style>body{font-family:Arial;padding:35px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#eee}</style></head><body>${reportArea.innerHTML}</body></html>`],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Relatorio_Cabanha_Piterini_'+new Date().toISOString().slice(0,10)+'.html';a.click()}
-function renderAll(){if(!Array.isArray(DB.expenses))DB.expenses=[];if(!Array.isArray(DB.events))DB.events=[];if(!Array.isArray(DB.health))DB.health=[];if(!Array.isArray(DB.sales))DB.sales=[];if(!Array.isArray(DB.births))DB.births=[];if(!Array.isArray(DB.iatf))DB.iatf=[];if(!Array.isArray(DB.diagnosticos))DB.diagnosticos=[];if(!Array.isArray(DB.iatfExtras))DB.iatfExtras=[];if(!Array.isArray(DB.mothers))DB.mothers=[];if(!Array.isArray(DB.animals))DB.animals=[];if(!Array.isArray(DB.meds))DB.meds=[];renderDashboard();renderHerd();renderBirths();renderIatf();renderDiagnosticos();renderPrenhas();renderVazias();renderManejo();renderHealth();renderSales();renderExpenses();renderReportHistory();loadAccount()}
+function renderAll(){if(!Array.isArray(DB.expenses))DB.expenses=[];if(!Array.isArray(DB.events))DB.events=[];if(!Array.isArray(DB.health))DB.health=[];if(!Array.isArray(DB.sales))DB.sales=[];if(!Array.isArray(DB.births))DB.births=[];if(!Array.isArray(DB.iatf))DB.iatf=[];if(!Array.isArray(DB.diagnosticos))DB.diagnosticos=[];if(!Array.isArray(DB.iatfExtras))DB.iatfExtras=[];if(!Array.isArray(DB.mothers))DB.mothers=[];if(!Array.isArray(DB.animals))DB.animals=[];if(!Array.isArray(DB.meds))DB.meds=[];renderDashboard();renderHerd();renderBirths();renderIatf();renderDiagnosticos();renderPrenhas();renderVazias();renderManejo();renderManejoCalendario();renderHealth();renderSales();renderExpenses();renderReportHistory();loadAccount()}
 </script></body></html>
