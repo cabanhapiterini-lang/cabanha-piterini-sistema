@@ -253,9 +253,9 @@ async function doLogin(){
     if(!x){x={u:u,n:u,r:'Usuário',email};USERS.push(x);localStorage.setItem(USERKEY,JSON.stringify(USERS));}
     CURRENT={...x,authUserId:data.user.id,email:data.user.email};
     sessionStorage.setItem('CPIT_LOGIN',u);
-    await loadUserProfile();
-    openApp();
-    await loadCloudState();
+   openApp();
+await loadCloudState();
+await loadUserProfile();
   }catch(err){
     console.error(err);
     // Mantém o login antigo como fallback apenas para uso local.
