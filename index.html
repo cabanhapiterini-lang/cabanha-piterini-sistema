@@ -100,6 +100,10 @@
 
   <div id="manejoCalendario" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div>
 </div>
+   <div style="display:flex;gap:8px;margin:15px 0">
+  <button class="btn primary" onclick="mostrarAbaManejo('calendario')">📅 Calendário</button>
+  <button class="btn light" onclick="mostrarAbaManejo('lista')">📋 Lista de manejos</button>
+</div>
 </div>  <div class="grid" id="manejoMetrics"></div>
 
   <div class="toolbar">
@@ -324,6 +328,26 @@ DB.health.forEach(x=>{if(x.proxima)list.push({d:x.proxima,t:'Sanidade',s:x.anima
 list.sort((a,b)=>String(a.d||a.data).localeCompare(String(b.d||b.data)));
 let html=list.slice(0,12).map(e=>{let d=e.d||e.data,t=e.t||e.titulo,s=e.s||[e.animal,e.obs].filter(Boolean).join(' · ');let actions=e._source==='manual'?`<button class="btn light" style="float:right;margin-left:5px;padding:5px 8px" onclick="editEvent(${e._index})">Editar</button><button class="btn danger" style="float:right;padding:5px 8px" onclick="deleteEvent(${e._index})">Excluir</button>`:'';return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${fmtDate(d)}</b> — ${esc(t)} <span class="muted">· ${esc(s)}</span>${actions}</div>`}).join('');
 document.getElementById('events').innerHTML=html||'<div class="muted">Nenhum evento futuro registrado. Clique em “+ Próximo evento” para cadastrar.</div>'
+}
+  function mostrarAbaManejo(aba){
+  let calendario=document.getElementById('manejoCalendario');
+  let lista=document.getElementById('manejoMetrics');
+  let busca=document.querySelector('#manejo .toolbar');
+  let tabela=document.querySelector('#manejo .tablewrap');
+
+  if(aba==='calendario'){
+    calendario.style.display='grid';
+    if(lista)lista.style.display='grid';
+    if(busca)busca.style.display='block';
+    if(tabela)tabela.style.display='block';
+  }else{
+    calendario.style.display='none';
+    if(lista)lista.style.display='grid';
+    if(busca)busca.style.display='block';
+    if(tabela)tabela.style.display='block';
+
+    if(tabela)tabela.scrollIntoView({behavior:'smooth',block:'start'});
+  }
 }
   function renderManejo(){
   let q=(manejoQ.value||'').toLowerCase();
