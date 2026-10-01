@@ -329,7 +329,7 @@ const saved=await save();if(!saved)return;closeModal();renderAll()}catch(err){co
 
 async function deleteRecord(type,index){
   if(!confirm('Tem certeza que deseja excluir este registro?')) return;
-  let map={birth:'births',iatf:'iatf',health:'health',med:'meds',sale:'sales',expense:'expenses'};
+let map={birth:'births',iatf:'iatf',health:'health',med:'meds',sale:'sales',expense:'expenses',diagnostico:'diagnosticos'};
   let key=map[type];
   if(!key||!Array.isArray(DB[key])||index<0||index>=DB[key].length)return;
   let old=DB[key][index];
