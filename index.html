@@ -323,39 +323,20 @@ function renderVazias(){
   hoje.setHours(12,0,0,0);
 
   /*
-    Junta as matrizes do cadastro de mães com as fêmeas
-    cadastradas no rebanho.
+    Usa exatamente as mesmas matrizes que aparecem
+    na aba REBANHO.
   */
-  let matrizes=[...(Array.isArray(DB.mothers)?DB.mothers:[])];
-
-  if(Array.isArray(DB.animals)){
-    DB.animals.forEach(a=>{
-      let sexo=String(a.sexo||a.sex||a.gender||'').toLowerCase();
-
-      if(
-        sexo.includes('fêmea') ||
-        sexo.includes('femea') ||
-        sexo==='f' ||
-        sexo.includes('female')
-      ){
-        let br=String(a.brinco||a.id||'').trim();
-
-        if(
-          br &&
-          !matrizes.some(m=>String(m.brinco||'').trim()===br)
-        ){
-          matrizes.push(a);
-        }
-      }
-    });
-  }
+  let matrizes=herdAnimals().filter(x=>
+    x.tipo==='Matriz' &&
+    x.status==='Ativo'
+  );
 
   /*
-    Diagnóstico mais recente de cada matriz.
+    Pega o diagnóstico mais recente de cada matriz.
   */
   let diagnosticosPorBrinco={};
 
-  DB.diagnosticos.forEach(d=>{
+  (DB.diagnosticos||[]).forEach(d=>{
     let br=String(d.brinco||'').trim();
     if(!br)return;
 
@@ -371,33 +352,34 @@ function renderVazias(){
   });
 
   let a=matrizes.map(m=>{
-    let br=String(m.brinco||m.id||'').trim();
+    let br=String(m.brinco||'').trim();
     let diag=diagnosticosPorBrinco[br];
 
     /*
-      Se o diagnóstico mais recente for Prenhe,
-      não entra na aba Vazias.
+      Se o diagnóstico atual for Prenhe,
+      não aparece em Vazias.
     */
     if(diag && String(diag.resultado||'')==='Prenhe'){
       return null;
     }
 
     /*
-      Se tiver diagnóstico Vazia, usa os dados dele.
-      Se não tiver diagnóstico, aparece como
+      Se estiver Vazia, usa os dados do diagnóstico.
+      Se nunca tiver diagnóstico, entra como
       "Sem diagnóstico".
     */
-    let registro=diag
-      ? diag
-      : {
-          brinco:br,
-          data:'',
-          tipo:'Sem diagnóstico',
-          inseminador:'',
-          touro:'',
-          obs:''
-        };
+    let registro=diag ? diag : {
+      brinco:br,
+      data:'',
+      tipo:'Sem diagnóstico',
+      inseminador:'',
+      touro:'',
+      obs:''
+    };
 
+    /*
+      Calcula os dias desde o último parto.
+    */
     let partos=DB.births
       .filter(b=>
         String(b.mae||'').trim()===br &&
@@ -405,7 +387,7 @@ function renderVazias(){
       )
       .map(b=>parseData(b.data))
       .filter(d=>d&&d<=hoje)
-      .sort((x,y)=>y-x);
+      .sort((a,b)=>b-a);
 
     let dias=partos.length
       ? Math.max(0,Math.floor((hoje-partos[0])/86400000))
@@ -425,8 +407,8 @@ function renderVazias(){
     metric('Vazias',a.length,'matrizes atualmente vazias')
   ].join('');
 
-  vaziasRows.innerHTML=a.map(x=>{
-    return '<tr>'+
+  vaziasRows.innerHTML=a.map(x=>
+    '<tr>'+
       '<td><b>'+esc(x.brinco||'')+'</b></td>'+
       '<td>'+(x.data?fmtDate(x.data):'—')+'</td>'+
       '<td>'+x._diasVazia+'</td>'+
@@ -434,8 +416,8 @@ function renderVazias(){
       '<td>'+esc(x.inseminador||'—')+'</td>'+
       '<td>'+esc(x.touro||'—')+'</td>'+
       '<td>'+esc(x.obs||'—')+'</td>'+
-    '</tr>';
-  }).join('') ||
+    '</tr>'
+  ).join('') ||
   '<tr><td colspan="7">Nenhuma matriz vazia registrada.</td></tr>';
 }
   window.renderHealth=function(){let q=(document.getElementById('healthQ')?.value||'').toLowerCase();healthRows.innerHTML=DB.health.map((x,i)=>({x,i})).filter(z=>JSON.stringify(z.x).toLowerCase().includes(q)).map(z=>{let x=z.x,i=z.i;return '<tr><td>'+fmtDate(x.data)+'</td><td>'+esc(x.animal||'—')+'</td><td>'+esc(x.procedimento||'—')+'</td><td>'+esc(x.produto||'—')+'</td><td>'+esc(x.dose||'—')+'</td><td>'+esc(x.responsavel||'—')+'</td><td>'+fmtDate(x.proxima)+'</td><td>'+esc(x.obs||'—')+'</td><td>—</td></tr>'}).join('')}
