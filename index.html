@@ -309,13 +309,45 @@ function groupPerf(arr,key){let m={};arr.forEach(x=>{let k=(x[key]||'Não inform
 function drawRateBars(id,obj){let vals=Object.values(obj),max=Math.max(...vals.map(x=>x.dg?x.p/x.dg:0),.01);document.getElementById(id).innerHTML=Object.entries(obj).slice(0,6).map(([k,v])=>`<div class="bar" style="height:${Math.max(5,(v.dg?v.p/v.dg:0)/max*165)}px"><b>${v.dg?pct(v.p,v.dg):'—'}</b><span>${esc(k)}</span></div>`).join('')||'<span class="muted">Ainda sem DG com resultado.</span>'}
 function renderDashboard(){let s=stats();dashMetrics.innerHTML=[metric('Vacas / matrizes',s.activeM,'base da cabanha'),metric('Nascimentos',DB.births.length,'base importada'),metric('IATFs',DB.iatf.length,'brincos únicos importados'),metric('Taxa geral de prenhez',pct(s.preg,s.dg),'sobre DG com resultado'),metric('Filhos mortos',s.dead,'vermelhos na planilha'),metric('Medicamentos',DB.meds.length,'importados'),metric('Gastos registrados',money(s.expenses),'lançados'),metric('Vendas registradas',DB.sales.length,'histórico')].join('');drawRateBars('insBars',groupPerf(DB.iatf,'inseminador'));drawRateBars('bullBars',groupPerf(DB.iatf,'touro'));renderEvents()}
 function renderEvents(){
-let list=[];
+  let list=[];
 if(Array.isArray(DB.events)) DB.events.forEach((x,i)=>list.push({...x,_source:'manual',_index:i}));
 DB.iatf.forEach(x=>{if(x.dg&&!x.resultado)list.push({d:x.dg,t:'DG pendente',s:'Brinco '+x.brinco,_source:'auto'});if(x.parto)list.push({d:x.parto,t:'Parto previsto',s:'Brinco '+x.brinco,_source:'auto'})});
 DB.health.forEach(x=>{if(x.proxima)list.push({d:x.proxima,t:'Sanidade',s:x.animal,_source:'auto'})});
 list.sort((a,b)=>String(a.d||a.data).localeCompare(String(b.d||b.data)));
 let html=list.slice(0,12).map(e=>{let d=e.d||e.data,t=e.t||e.titulo,s=e.s||[e.animal,e.obs].filter(Boolean).join(' · ');let actions=e._source==='manual'?`<button class="btn light" style="float:right;margin-left:5px;padding:5px 8px" onclick="editEvent(${e._index})">Editar</button><button class="btn danger" style="float:right;padding:5px 8px" onclick="deleteEvent(${e._index})">Excluir</button>`:'';return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${fmtDate(d)}</b> — ${esc(t)} <span class="muted">· ${esc(s)}</span>${actions}</div>`}).join('');
 document.getElementById('events').innerHTML=html||'<div class="muted">Nenhum evento futuro registrado. Clique em “+ Próximo evento” para cadastrar.</div>'
+}
+  function renderManejo(){
+  let q=(manejoQ.value||'').toLowerCase();
+  let a=Array.isArray(DB.events)?DB.events:[];
+
+  manejoMetrics.innerHTML=[
+    metric('Total',a.length,'manejos registrados'),
+    metric('Pendentes',a.filter(x=>x.status==='Pendente').length,'a realizar'),
+    metric('Concluídos',a.filter(x=>x.status==='Concluído').length,'já realizados')
+  ].join('');
+
+  manejoRows.innerHTML=a
+    .map((x,i)=>({x,i}))
+    .filter(z=>JSON.stringify(z.x).toLowerCase().includes(q))
+    .sort((a,b)=>String(a.x.data||'').localeCompare(String(b.x.data||'')))
+    .map(z=>{
+      let x=z.x,i=z.i;
+      return '<tr>'+
+        '<td>'+fmtDate(x.data)+'</td>'+
+        '<td><b>'+esc(x.titulo||'—')+'</b></td>'+
+        '<td>'+esc(x.tipo||'—')+'</td>'+
+        '<td>'+esc(x.animal||'—')+'</td>'+
+        '<td>'+esc(x.responsavel||'—')+'</td>'+
+        '<td><span class="status '+(x.status==='Concluído'?'ok':'warn')+'">'+esc(x.status||'Pendente')+'</span></td>'+
+        '<td>'+esc(x.obs||'—')+'</td>'+
+        '<td class="actions-cell">'+
+          '<button class="btn light" onclick="editEvent('+i+')">Editar</button>'+
+          '<button class="btn danger" onclick="deleteEvent('+i+')">Excluir</button>'+
+        '</td>'+
+      '</tr>';
+    }).join('') ||
+    '<tr><td colspan="8">Nenhum manejo registrado.</td></tr>';
 }
 function editEvent(i){openForm('event',DB.events[i]);modalForm.dataset.edit='event';modalForm.dataset.index=i}
 function deleteEvent(i){if(confirm('Excluir este próximo evento?')){DB.events.splice(i,1);save();renderAll()}}
@@ -523,5 +555,5 @@ function reportPerf(obj){return `<div class="tablewrap"><table><thead><tr><th>No
 function renderReportHistory(){reportHistory.innerHTML=REPORTS.map(r=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${new Date(r.date).toLocaleString('pt-BR')}</b> · ${esc(r.type)} · ${fmtDate(r.start)} a ${fmtDate(r.end)} <button class="btn light" style="float:right" onclick="openSavedReport(${r.id})">Abrir</button></div>`).join('')||'<span class="muted">Nenhum relatório salvo.</span>'}
 function openSavedReport(id){let r=REPORTS.find(x=>x.id===id);if(r)reportArea.innerHTML=r.html}
 function saveReportFile(){if(!reportArea.innerHTML.trim())return alert('Gere um relatório primeiro.');let blob=new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Relatório Cabanha Piterini</title><style>body{font-family:Arial;padding:35px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#eee}</style></head><body>${reportArea.innerHTML}</body></html>`],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Relatorio_Cabanha_Piterini_'+new Date().toISOString().slice(0,10)+'.html';a.click()}
-function renderAll(){if(!Array.isArray(DB.expenses))DB.expenses=[];if(!Array.isArray(DB.events))DB.events=[];if(!Array.isArray(DB.health))DB.health=[];if(!Array.isArray(DB.sales))DB.sales=[];if(!Array.isArray(DB.births))DB.births=[];if(!Array.isArray(DB.iatf))DB.iatf=[];if(!Array.isArray(DB.diagnosticos))DB.diagnosticos=[];if(!Array.isArray(DB.iatfExtras))DB.iatfExtras=[];if(!Array.isArray(DB.mothers))DB.mothers=[];if(!Array.isArray(DB.animals))DB.animals=[];if(!Array.isArray(DB.meds))DB.meds=[];renderDashboard();renderHerd();renderBirths();renderIatf();renderDiagnosticos();renderPrenhas();renderHealth();renderSales();renderExpenses();renderReportHistory();loadAccount()}
+function renderAll(){if(!Array.isArray(DB.expenses))DB.expenses=[];if(!Array.isArray(DB.events))DB.events=[];if(!Array.isArray(DB.health))DB.health=[];if(!Array.isArray(DB.sales))DB.sales=[];if(!Array.isArray(DB.births))DB.births=[];if(!Array.isArray(DB.iatf))DB.iatf=[];if(!Array.isArray(DB.diagnosticos))DB.diagnosticos=[];if(!Array.isArray(DB.iatfExtras))DB.iatfExtras=[];if(!Array.isArray(DB.mothers))DB.mothers=[];if(!Array.isArray(DB.animals))DB.animals=[];if(!Array.isArray(DB.meds))DB.meds=[];renderDashboard();renderHerd();renderBirths();renderIatf();renderDiagnosticos();renderPrenhas();renderVazias();renderManejo();renderHealth();renderSales();renderExpenses();renderReportHistory();loadAccount()}
 </script></body></html>
