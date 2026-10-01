@@ -312,7 +312,7 @@ else if(MODAL_TYPE==='iatf'){let idx=DB.iatf.findIndex(x=>String(x.brinco)===Str
 else if(MODAL_TYPE==='sale'){if(!o.valor&&o.peso&&o.preco)o.valor=Number(o.peso)*Number(o.preco);let dup=DB.sales.some((s,j)=>j!==index&&String(s.brinco)===String(o.brinco)&&String(s.data)===String(o.data));if(dup)return alert('Já existe uma venda desse brinco nessa data.');if(edit==='sale'&&index>=0)DB.sales[index]=o;else DB.sales.push(o)}
 else if(MODAL_TYPE==='diagnostico'){
   if(edit==='diagnostico'&&index>=0)DB.diagnosticos[index]=o;
-  else DB.diagnosticos.push(o);
+ else {let existente=DB.diagnosticos.findIndex(x=>String(x.brinco||'').trim()===String(o.brinco||'').trim());if(existente>=0)DB.diagnosticos[existente]=o;else DB.diagnosticos.push(o)}
 }
 else if(MODAL_TYPE==='health'){if(edit==='health'&&index>=0)DB.health[index]=o;else DB.health.push(o)}else if(MODAL_TYPE==='med'){if(edit==='med'&&index>=0)DB.meds[index]=o;else DB.meds.push(o)}else if(MODAL_TYPE==='expense'){
   if(!Array.isArray(DB.expenses)) DB.expenses=[];
