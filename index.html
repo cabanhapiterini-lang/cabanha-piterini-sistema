@@ -340,14 +340,24 @@ document.getElementById('events').innerHTML=html||'<div class="muted">Nenhum eve
     if(lista)lista.style.display='grid';
     if(busca)busca.style.display='block';
     if(tabela)tabela.style.display='block';
+
+    window.scrollTo({
+      top:0,
+      behavior:'smooth'
+    });
+
   }else{
     calendario.style.display='none';
     if(lista)lista.style.display='grid';
     if(busca)busca.style.display='block';
     if(tabela)tabela.style.display='block';
 
-    if(tabela)tabela.scrollIntoView({behavior:'smooth',block:'start'});
+    window.scrollTo({
+      top:document.getElementById('manejo').offsetTop,
+      behavior:'smooth'
+    });
   }
+}
 }
   function renderManejo(){
   let q=(manejoQ.value||'').toLowerCase();
