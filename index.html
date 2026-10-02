@@ -65,6 +65,52 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
   background:#edf7f0;color:#24583c;font-size:11px
 }
 @media(max-width:700px){.mobile-help{display:block}}
+/* ===== MELHORIA MOBILE Cabanha Piterini ===== */
+@media (max-width:700px){
+  .nav{
+    display:flex!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:0 3px!important;
+    scrollbar-width:none;
+  }
+
+  .nav::-webkit-scrollbar{
+    display:none;
+  }
+
+  .nav button{
+    flex:0 0 72px!important;
+    min-width:72px!important;
+    padding:6px 3px!important;
+    margin:0!important;
+    text-align:center!important;
+    border-radius:9px!important;
+    font-size:20px!important;
+  }
+
+  .nav button span{
+    display:block!important;
+    font-size:9px!important;
+    line-height:10px!important;
+    margin-top:3px!important;
+    white-space:nowrap!important;
+  }
+
+  .btn{
+    min-height:42px!important;
+    padding:10px 14px!important;
+    font-size:13px!important;
+  }
+
+  input,select,textarea{
+    min-height:42px!important;
+    font-size:14px!important;
+  }
+}
 </style></head>
 <body>
 <div class="login" id="login"><div class="loginbox">
