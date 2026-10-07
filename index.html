@@ -947,6 +947,7 @@ function renderIatf(){
     <td>${fmtDate(previsaoParto(x))}</td>
     <td>
 <button class="btn light" onclick="editIatf(${DB.iatf.indexOf(x)})">Editar</button>
+<button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
     </td>
   </tr>`).join('')
 }
