@@ -946,10 +946,15 @@ function renderIatf(){
     <td>${esc(x.protocolo)}</td>
     <td>${fmtDate(previsaoParto(x))}</td>
     <td>
-      <button class="btn light" onclick="editIatf('${esc(x.brinco)}')">Editar</button>
-      <button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
+<button class="btn light" onclick="editIatf(${DB.iatf.indexOf(x)})">Editar</button>
     </td>
   </tr>`).join('')
+}
+  function editIatf(i){
+  if(i<0 || i>=DB.iatf.length)return;
+  openForm('iatf',DB.iatf[i]);
+  modalForm.dataset.edit='iatf';
+  modalForm.dataset.index=i;
 }
 function editDiagnostico(i){if(i<0||i>=DB.diagnosticos.length)return;openForm('diagnostico',DB.diagnosticos[i]);modalForm.dataset.edit='diagnostico';modalForm.dataset.index=i}
 function renderDiagnosticos(){let q=(diagnosticoQ.value||'').toLowerCase();let parseData=v=>{if(!v)return null;let s=String(v).trim(),d;if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){let p=s.split('/');d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]),12)}else{d=new Date(s.includes('T')?s:s+'T12:00:00')}return isNaN(d)?null:d};let fmtPrev=(data,dias)=>{let d=parseData(data),n=Number(dias);if(!d||isNaN(n)||n<0)return '—';let parto=new Date(d);parto.setDate(parto.getDate()+(285-n));return parto.toLocaleDateString('pt-BR')};let diasVazia=(brinco)=>{let hoje=new Date();hoje.setHours(12,0,0,0);let diags=DB.diagnosticos.filter(x=>String(x.brinco||'').trim()===String(brinco||'').trim()&&x.data).map(x=>({...x,_d:parseData(x.data)})).filter(x=>x._d&&x._d<=hoje).sort((a,b)=>b._d-a._d),ultimo=diags[0],partos=DB.births.filter(b=>String(b.mae||'').trim()===String(brinco||'').trim()&&b.data).map(b=>parseData(b.data)).filter(d=>d&&d<=hoje).sort((a,b)=>b-a),inicio=ultimo?.resultado==='Vazia'?partos[0]:(ultimo?null:partos[0]);if(!inicio)return '—';return String(Math.max(0,Math.floor((hoje-inicio)/86400000)))};diagnosticoMetrics.innerHTML=[metric('Diagnósticos',DB.diagnosticos.length,'registrados'),metric('Prenhes',DB.diagnosticos.filter(x=>x.resultado==='Prenhe').length,'resultado'),metric('Vazias',DB.diagnosticos.filter(x=>x.resultado==='Vazia').length,'resultado')].join('');diagnosticoRows.innerHTML=DB.diagnosticos.map((x,i)=>({x,i})).filter(z=>JSON.stringify(z.x).toLowerCase().includes(q)).map(z=>{let x=z.x,i=z.i,prenhe=String(x.resultado||'')==='Prenhe';return '<tr><td><b>'+esc(x.brinco||'')+'</b></td><td>'+fmtDate(x.data)+'</td><td>'+esc(x.resultado||'—')+'</td><td>'+(prenhe?(x.prenheDias||'—'):'—')+'</td><td>'+(!prenhe?diasVazia(x.brinco):'—')+'</td><td>'+(prenhe?fmtPrev(x.data,x.prenheDias):'—')+'</td><td>'+esc(x.tipo||'—')+'</td><td>'+esc(x.inseminador||'—')+'</td><td>'+esc(x.touro||'—')+'</td><td>'+esc(x.obs||'—')+'</td><td class="actions-cell"><button class="btn light" onclick="editDiagnostico('+i+')">Editar</button><button class="btn danger" onclick="deleteRecord(&quot;diagnostico&quot;,'+i+')">Excluir</button></td></tr>'}).join('')}
