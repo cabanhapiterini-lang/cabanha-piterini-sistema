@@ -719,8 +719,47 @@ async function logout(){try{await SB.auth.signOut()}catch(e){}sessionStorage.rem
 function show(id,btn){const mod={config:'configuracoes',usuarios:'usuarios'}[id];if(mod&&!canView(mod)){alert('Você não tem acesso a esta área.');return}document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));const sec=document.getElementById(id);if(!sec)return;sec.classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='relatorios')renderReportHistory();if(id==='salvar')renderSavePanel()}
 function metric(a,b,c){return `<div class="card metric"><small>${a}</small><strong>${b}</strong><em>${c||''}</em></div>`}
 function stats(){let motherIds=new Set(DB.mothers.map(m=>String(m.brinco))),soldM=new Set(DB.sales.map(s=>String(s.brinco)).filter(b=>motherIds.has(b))).size,activeM=Math.max(0,Number(DB.dashboardVacas||DB.mothers.length)-soldM),dead=DB.births.filter(x=>x.situacao==='Morto').length,preg=DB.iatf.filter(x=>/^prenhe$/i.test(x.resultado)).length,dg=DB.iatf.filter(x=>x.dg&&x.resultado).length,expenses=DB.expenses.reduce((s,x)=>s+(Number(x.valor)||0),0);return {activeM,dead,preg,dg,expenses}}
-function groupPerf(arr,key){let m={};arr.forEach(x=>{let k=(x[key]||'Não informado').toString().trim()||'Não informado';if(!m[k])m[k]={total:0,dg:0,p:0,v:0};m[k].total++;if(x.dg&&x.resultado)m[k].dg++;if(/^prenhe$/i.test(x.resultado))m[k].p++;if(/^vazia$/i.test(x.resultado))m[k].v++});return m}
-function drawRateBars(id,obj){let vals=Object.values(obj),max=Math.max(...vals.map(x=>x.dg?x.p/x.dg:0),.01);document.getElementById(id).innerHTML=Object.entries(obj).slice(0,6).map(([k,v])=>{let taxa=v.dg?v.p/v.dg:0;let altura=Math.max(8,taxa/max*165);return `<div class="bar" style="height:${altura}px"><b>${v.dg?pct(v.p,v.dg):'—'}</b><span>${esc(k)}</span></div>`}).join('')||'<span class="muted">Ainda sem DG com resultado.</span>'}
+function groupPerf(arr,key){
+  let m={};
+
+  arr.forEach(x=>{
+    let temRepasse=!!x.repasseData;
+
+    // IATF ORIGINAL
+    let k=(x[key]||'Não informado').toString().trim()||'Não informado';
+
+    if(!m[k])m[k]={total:0,dg:0,p:0,v:0};
+
+    m[k].total++;
+
+    // Quando houve repasse, a tentativa original
+    // passa a contar como VAZIA
+    if(temRepasse){
+      m[k].dg++;
+      m[k].v++;
+    }else{
+      if(x.dg&&x.resultado)m[k].dg++;
+      if(/^prenhe$/i.test(x.resultado))m[k].p++;
+      if(/^vazia$/i.test(x.resultado))m[k].v++;
+    }
+
+    // REPASSE = NOVA TENTATIVA
+    if(temRepasse){
+
+      let repasseKey=
+        key==='touro'
+          ?((x.repasseTouro||'Não informado').toString().trim()||'Não informado')
+          :((x.repasseResponsavel||'Não informado').toString().trim()||'Não informado');
+
+      if(!m[repasseKey])m[repasseKey]={total:0,dg:0,p:0,v:0};
+
+      m[repasseKey].total++;
+    }
+  });
+
+  return m;
+}
+  function drawRateBars(id,obj){let vals=Object.values(obj),max=Math.max(...vals.map(x=>x.dg?x.p/x.dg:0),.01);document.getElementById(id).innerHTML=Object.entries(obj).slice(0,6).map(([k,v])=>{let taxa=v.dg?v.p/v.dg:0;let altura=Math.max(8,taxa/max*165);return `<div class="bar" style="height:${altura}px"><b>${v.dg?pct(v.p,v.dg):'—'}</b><span>${esc(k)}</span></div>`}).join('')||'<span class="muted">Ainda sem DG com resultado.</span>'}
   function renderDashboard(){let s=stats();let receita=DB.sales.reduce((a,x)=>a+(Number(x.valor)||0),0);let gastos=DB.expenses.reduce((a,x)=>a+(Number(x.valor)||0),0);let saldo=receita-gastos;dashMetrics.innerHTML=[metric('Vacas / matrizes',s.activeM,'base da cabanha'),metric('Nascimentos',DB.births.length,'base importada'),metric('IATFs',DB.iatf.length,'brincos únicos importados'),metric('Taxa geral de prenhez',pct(s.preg,s.dg),'sobre DG com resultado'),metric('Filhos mortos',s.dead,'vermelhos na planilha'),metric('Medicamentos',DB.meds.length,'importados'),metric('Receita total',money(receita),'vendas realizadas'),metric('Gastos totais',money(gastos),'despesas registradas'),metric('Saldo',money(saldo),'receita menos gastos')].join('');drawRateBars('insBars',groupPerf(DB.iatf,'inseminador'));drawRateBars('bullBars',groupPerf(DB.iatf,'touro'));renderEvents()}
   function renderEvents(){
   let list=[];
@@ -867,8 +906,51 @@ function editSale(i){if(i<0)return;openForm('sale',DB.sales[i]);modalForm.datase
 function editExpense(i){if(i<0)return;openForm('expense',DB.expenses[i]);modalForm.dataset.edit='expense';modalForm.dataset.index=i}
 function editHerd(brinco){let i=DB.mothers.findIndex(x=>String(x.brinco)===String(brinco));if(i>=0){openForm('mother',DB.mothers[i]);modalForm.dataset.edit='mother';modalForm.dataset.index=i;return}DB.animals=DB.animals||[];i=DB.animals.findIndex(x=>String(x.brinco)===String(brinco));if(i>=0){openForm('animal',DB.animals[i]);modalForm.dataset.edit='animal';modalForm.dataset.index=i}}
 function recomputeMotherCounts(){DB.mothers.forEach(m=>{m.filhos=0;m.filhos_vivos=0;m.filhos_mortos=0});DB.births.forEach(b=>{if(!b.mae)return;let m=DB.mothers.find(x=>String(x.brinco)===String(b.mae));if(m){m.filhos++;if(b.situacao==='Morto')m.filhos_mortos++;else m.filhos_vivos++}})}
-function renderIatf(){renderYears('iatfYear',DB.iatf);let q=(iatfQ.value||'').toLowerCase(),y=iatfYear.value,a=DB.iatf.filter(x=>(!y||year(x.iatf||x.d0)===y)&&JSON.stringify(x).toLowerCase().includes(q)),p=a.filter(x=>/^prenhe$/i.test(x.resultado)).length,dg=a.filter(x=>x.dg&&x.resultado).length;iatfMetrics.innerHTML=[metric('IATFs',a.length,'período selecionado'),metric('DG com resultado',dg,'diagnósticos'),metric('Prenhes',p,'resultado DG'),metric('Taxa geral',pct(p,dg),'sobre DG')].join('');try{perfTables(a)}catch(e){}iatfRows.innerHTML=a.map(x=>`<tr><td><b>${esc(x.brinco)}</b></td><td>${fmtDate(x.iatf)}</td><td>${fmtDate(x.repasseData)}</td><td>${fmtDate(x.dg)}</td><td><span class="status ${/^prenhe$/i.test(x.resultado)?'ok':/^vazia$/i.test(x.resultado)?'dead':'warn'}">${esc(x.resultado||'Pendente')}</span></td><td>${esc(x.touro)}</td><td>${esc(x.inseminador)}</td><td>${esc(x.protocolo)}</td><td>${fmtDate(x.parto)}</td><td><button class="btn light" onclick="editIatf('${esc(x.brinco)}')">Editar</button><button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button></td></tr>`).join('')}
-  function editIatf(brinco){let i=DB.iatf.findIndex(x=>String(x.brinco)===String(brinco));if(i<0)return;openForm('iatf',DB.iatf[i]);modalForm.dataset.edit='iatf';modalForm.dataset.index=i}
+function renderIatf(){
+  renderYears('iatfYear',DB.iatf);
+
+  let q=(iatfQ.value||'').toLowerCase(),
+      y=iatfYear.value,
+      a=DB.iatf.filter(x=>(!y||year(x.iatf||x.d0)===y)&&JSON.stringify(x).toLowerCase().includes(q)),
+      p=a.filter(x=>/^prenhe$/i.test(x.resultado)).length,
+      dg=a.filter(x=>x.dg&&x.resultado).length;
+
+  let previsaoParto=x=>{
+    let base=x.repasseData||x.iatf;
+    if(!base)return x.parto||'';
+
+    let d=new Date(String(base).includes('T')?base:base+'T12:00:00');
+    if(isNaN(d))return x.parto||'';
+
+    d.setDate(d.getDate()+283);
+    return d.toISOString().slice(0,10);
+  };
+
+  iatfMetrics.innerHTML=[
+    metric('IATFs',a.length,'período selecionado'),
+    metric('DG com resultado',dg,'diagnósticos'),
+    metric('Prenhes',p,'resultado DG'),
+    metric('Taxa geral',pct(p,dg),'sobre DG')
+  ].join('');
+
+  try{perfTables(a)}catch(e){}
+
+  iatfRows.innerHTML=a.map(x=>`<tr>
+    <td><b>${esc(x.brinco)}</b></td>
+    <td>${fmtDate(x.iatf)}</td>
+    <td>${fmtDate(x.repasseData)}</td>
+    <td>${fmtDate(x.dg)}</td>
+    <td><span class="status ${/^prenhe$/i.test(x.resultado)?'ok':/^vazia$/i.test(x.resultado)?'dead':'warn'}">${esc(x.resultado||'Pendente')}</span></td>
+    <td>${esc(x.touro)}</td>
+    <td>${esc(x.inseminador)}</td>
+    <td>${esc(x.protocolo)}</td>
+    <td>${fmtDate(previsaoParto(x))}</td>
+    <td>
+      <button class="btn light" onclick="editIatf('${esc(x.brinco)}')">Editar</button>
+      <button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
+    </td>
+  </tr>`).join('')
+}
 function editDiagnostico(i){if(i<0||i>=DB.diagnosticos.length)return;openForm('diagnostico',DB.diagnosticos[i]);modalForm.dataset.edit='diagnostico';modalForm.dataset.index=i}
 function renderDiagnosticos(){let q=(diagnosticoQ.value||'').toLowerCase();let parseData=v=>{if(!v)return null;let s=String(v).trim(),d;if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){let p=s.split('/');d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]),12)}else{d=new Date(s.includes('T')?s:s+'T12:00:00')}return isNaN(d)?null:d};let fmtPrev=(data,dias)=>{let d=parseData(data),n=Number(dias);if(!d||isNaN(n)||n<0)return '—';let parto=new Date(d);parto.setDate(parto.getDate()+(285-n));return parto.toLocaleDateString('pt-BR')};let diasVazia=(brinco)=>{let hoje=new Date();hoje.setHours(12,0,0,0);let diags=DB.diagnosticos.filter(x=>String(x.brinco||'').trim()===String(brinco||'').trim()&&x.data).map(x=>({...x,_d:parseData(x.data)})).filter(x=>x._d&&x._d<=hoje).sort((a,b)=>b._d-a._d),ultimo=diags[0],partos=DB.births.filter(b=>String(b.mae||'').trim()===String(brinco||'').trim()&&b.data).map(b=>parseData(b.data)).filter(d=>d&&d<=hoje).sort((a,b)=>b-a),inicio=ultimo?.resultado==='Vazia'?partos[0]:(ultimo?null:partos[0]);if(!inicio)return '—';return String(Math.max(0,Math.floor((hoje-inicio)/86400000)))};diagnosticoMetrics.innerHTML=[metric('Diagnósticos',DB.diagnosticos.length,'registrados'),metric('Prenhes',DB.diagnosticos.filter(x=>x.resultado==='Prenhe').length,'resultado'),metric('Vazias',DB.diagnosticos.filter(x=>x.resultado==='Vazia').length,'resultado')].join('');diagnosticoRows.innerHTML=DB.diagnosticos.map((x,i)=>({x,i})).filter(z=>JSON.stringify(z.x).toLowerCase().includes(q)).map(z=>{let x=z.x,i=z.i,prenhe=String(x.resultado||'')==='Prenhe';return '<tr><td><b>'+esc(x.brinco||'')+'</b></td><td>'+fmtDate(x.data)+'</td><td>'+esc(x.resultado||'—')+'</td><td>'+(prenhe?(x.prenheDias||'—'):'—')+'</td><td>'+(!prenhe?diasVazia(x.brinco):'—')+'</td><td>'+(prenhe?fmtPrev(x.data,x.prenheDias):'—')+'</td><td>'+esc(x.tipo||'—')+'</td><td>'+esc(x.inseminador||'—')+'</td><td>'+esc(x.touro||'—')+'</td><td>'+esc(x.obs||'—')+'</td><td class="actions-cell"><button class="btn light" onclick="editDiagnostico('+i+')">Editar</button><button class="btn danger" onclick="deleteRecord(&quot;diagnostico&quot;,'+i+')">Excluir</button></td></tr>'}).join('')}
   function renderPrenhas(){let q=(prenhasQ.value||'').toLowerCase(),parseData=v=>{if(!v)return null;let s=String(v).trim(),d;if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){let p=s.split('/');d=new Date(Number(p[2]),Number(p[1])-1,Number(p[0]),12)}else{d=new Date(s.includes('T')?s:s+'T12:00:00')}return isNaN(d)?null:d},fmtPrev=(data,dias)=>{let d=parseData(data),n=Number(dias);if(!d||isNaN(n)||n<0)return '—';let parto=new Date(d);parto.setDate(parto.getDate()+(285-n));return parto.toLocaleDateString('pt-BR')},a=DB.diagnosticos.filter(x=>String(x.resultado||'')==='Prenhe').filter(x=>JSON.stringify(x).toLowerCase().includes(q));prenhasMetrics.innerHTML=[metric('Prenhas',a.length,'matrizes atualmente prenhes')].join('');prenhasRows.innerHTML=a.map(x=>'<tr><td><b>'+esc(x.brinco||'')+'</b></td><td>'+fmtDate(x.data)+'</td><td>'+esc(x.prenheDias||'—')+'</td><td>'+fmtPrev(x.data,x.prenheDias)+'</td><td>'+esc(x.tipo||'—')+'</td><td>'+esc(x.inseminador||'—')+'</td><td>'+esc(x.touro||'—')+'</td><td>'+esc(x.obs||'—')+'</td></tr>').join('')||'<tr><td colspan="8">Nenhuma matriz prenhe registrada.</td></tr>'}
