@@ -941,8 +941,8 @@ function renderIatf(){
     <td>${fmtDate(x.repasseData)}</td>
     <td>${fmtDate(x.dg)}</td>
     <td><span class="status ${/^prenhe$/i.test(x.resultado)?'ok':/^vazia$/i.test(x.resultado)?'dead':'warn'}">${esc(x.resultado||'Pendente')}</span></td>
-    <td>${esc(x.touro)}</td>
-    <td>${esc(x.inseminador)}</td>
+<td>${esc(x.repasseTouro || x.touro)}</td>
+<td>${esc(x.inseminador)}</td>
     <td>${esc(x.protocolo)}</td>
     <td>${fmtDate(previsaoParto(x))}</td>
     <td>
