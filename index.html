@@ -313,55 +313,58 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
   if(!rows.length)return '';
 
   let max=Math.max(...rows.map(([k,v])=>v.total),1);
+  let barMax=360;
+  let rowH=42;
+  let height=rows.length*rowH+35;
 
-  return `<div style="
+  return `
+  <div style="
     margin-top:18px;
-    padding:18px;
-    border:1px solid #e1e8e3;
-    border-radius:16px;
-    background:linear-gradient(135deg,#f7faf8,#ffffff);
+    padding:16px;
+    border:1px solid #dfe7e1;
+    border-radius:14px;
+    background:#f8faf9;
   ">
     <div style="
       font-size:15px;
       font-weight:800;
       color:#173d2b;
-      margin-bottom:16px;
+      margin-bottom:8px;
     ">📊 ${esc(title)}</div>
 
-    <div style="display:flex;flex-direction:column;gap:13px">
-      ${rows.map(([k,v])=>{
-        let width=Math.max(5,Math.round((v.total/max)*100));
+    <svg width="100%" height="${height}" viewBox="0 0 560 ${height}"
+         xmlns="http://www.w3.org/2000/svg"
+         style="font-family:Arial,sans-serif">
 
-        return `<div>
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:5px;
-            font-size:11px;
-            font-weight:700;
-          ">
-            <span>${esc(k)}</span>
-            <span style="color:#176b3a;font-size:13px">${v.total}</span>
-          </div>
+      ${rows.map(([k,v],index)=>{
+        let y=30+(index*rowH);
+        let w=Math.max(8,(v.total/max)*barMax);
 
-          <div style="
-            width:100%;
-            height:13px;
-            background:#e7eee9;
-            border-radius:20px;
-            overflow:hidden;
-          ">
-            <div style="
-              width:${width}%;
-              height:100%;
-              background:linear-gradient(90deg,#176b3a,#43a86b);
-              border-radius:20px;
-            "></div>
-          </div>
-        </div>`;
+        return `
+          <text x="0" y="${y}" font-size="11"
+                font-weight="700" fill="#26352c">
+            ${esc(k).slice(0,32)}
+          </text>
+
+          <rect x="0" y="${y+7}"
+                width="${barMax}" height="13"
+                rx="6.5" fill="#e3ebe5"/>
+
+          <rect x="0" y="${y+7}"
+                width="${w}" height="13"
+                rx="6.5" fill="#21864b"/>
+
+          <text x="${Math.min(w+8,barMax+8)}"
+                y="${y+18}"
+                font-size="12"
+                font-weight="800"
+                fill="#173d2b">
+            ${v.total}
+          </text>
+        `;
       }).join('')}
-    </div>
+
+    </svg>
   </div>`;
 }
   #reportArea .report-head img{
