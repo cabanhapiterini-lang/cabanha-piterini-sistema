@@ -285,17 +285,17 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
     padding:0!important;
   }
 
-  #relatorios > .top,
-  #relatorios > .card.no-print{
+  /* ESCONDE TUDO DA CENTRAL DE RELATÓRIOS */
+  #relatorios > *{
     display:none!important;
   }
 
-  #reportArea{
+  /* MOSTRA SOMENTE O RELATÓRIO */
+  #relatorios > #reportArea{
     display:block!important;
-    margin:0!important;
-    padding:18px!important;
     width:100%!important;
-    max-width:none!important;
+    margin:0!important;
+    padding:20px!important;
     box-shadow:none!important;
     border:0!important;
   }
@@ -304,8 +304,6 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
     display:flex!important;
     align-items:center!important;
     gap:12px!important;
-    margin-bottom:18px!important;
-    padding-bottom:10px!important;
   }
 
   #reportArea .report-head img{
@@ -314,17 +312,6 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
     max-width:70px!important;
     max-height:55px!important;
     object-fit:contain!important;
-    flex:none!important;
-  }
-
-  #reportArea .report-head h2{
-    font-size:18px!important;
-    margin:0 0 4px!important;
-  }
-
-  #reportArea .tablewrap{
-    box-shadow:none!important;
-    overflow:visible!important;
   }
 
   #reportArea table{
@@ -335,12 +322,6 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
   #reportArea tr{
     break-inside:avoid!important;
     page-break-inside:avoid!important;
-  }
-
-  #reportArea h3,
-  #reportArea h4{
-    break-after:avoid!important;
-    page-break-after:avoid!important;
   }
 }
 /* ===== MOBILE — Cabanha Piterini ===== */
