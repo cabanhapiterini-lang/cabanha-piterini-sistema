@@ -314,23 +314,56 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
 
   let max=Math.max(...rows.map(([k,v])=>v.total),1);
 
-  return `<div class="report-modern">
-    <div class="report-modern-title">📊 ${esc(title)}</div>
-    <div class="report-bars">
+  return `<div style="
+    margin-top:18px;
+    padding:18px;
+    border:1px solid #e1e8e3;
+    border-radius:16px;
+    background:linear-gradient(135deg,#f7faf8,#ffffff);
+  ">
+    <div style="
+      font-size:15px;
+      font-weight:800;
+      color:#173d2b;
+      margin-bottom:16px;
+    ">📊 ${esc(title)}</div>
+
+    <div style="display:flex;flex-direction:column;gap:13px">
       ${rows.map(([k,v])=>{
-        let width=Math.max(4,Math.round((v.total/max)*100));
-        return `<div class="report-bar-row">
-          <div class="report-bar-name">${esc(k)}</div>
-          <div class="report-bar-track">
-            <div class="report-bar-fill" style="width:${width}%"></div>
+        let width=Math.max(5,Math.round((v.total/max)*100));
+
+        return `<div>
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:5px;
+            font-size:11px;
+            font-weight:700;
+          ">
+            <span>${esc(k)}</span>
+            <span style="color:#176b3a;font-size:13px">${v.total}</span>
           </div>
-          <div class="report-bar-value">${v.total}</div>
+
+          <div style="
+            width:100%;
+            height:13px;
+            background:#e7eee9;
+            border-radius:20px;
+            overflow:hidden;
+          ">
+            <div style="
+              width:${width}%;
+              height:100%;
+              background:linear-gradient(90deg,#176b3a,#43a86b);
+              border-radius:20px;
+            "></div>
+          </div>
         </div>`;
       }).join('')}
     </div>
   </div>`;
 }
-
   #reportArea .report-head img{
     width:70px!important;
     height:55px!important;
