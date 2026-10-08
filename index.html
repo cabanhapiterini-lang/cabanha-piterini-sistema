@@ -481,8 +481,8 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
 </div><div class="charts"><div class="card"><h3>Taxa de prenhez por inseminador</h3><div class="bars" id="insBars"></div></div><div class="card"><h3>Taxa de prenhez por touro/sêmen</h3><div class="bars" id="bullBars"></div></div></div><div class="card" style="margin-top:13px"><div class="top" style="margin-bottom:8px"><h3 style="margin:0">📅 Próximos eventos</h3><button class="btn primary" onclick="openForm('event')">+ Próximo evento</button></div><div id="events"></div></div></section>
 <section id="rebanho" class="section"><div class="top"><div><h1>Rebanho</h1><div class="muted">Venda tira o animal dos ativos e mantém o histórico.</div></div><button class="btn primary" onclick="openForm('animal')">+ Cadastrar animal</button></div><div class="grid" id="herdMetrics"></div><div class="toolbar"><input id="herdQ" placeholder="🔎 Buscar brinco..." oninput="renderHerd()"><select id="herdStatus" onchange="renderHerd()"><option value="ativo">Ativos</option><option value="vendido">Vendidos</option><option value="morto">Mortos</option><option value="todos">Todos</option></select></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Tipo</th><th>Filhos</th><th>Vivos</th><th>Mortos</th><th>IATF</th><th>Status</th><th>Ações</th></tr></thead><tbody id="herdRows"></tbody></table></div></section>
 <section id="nascimentos" class="section"><div class="top"><div><h1>Nascimentos</h1><div class="muted">Vermelho da planilha original = filho morto.</div></div><button class="btn primary" onclick="openForm('birth')">+ Novo nascimento</button></div><div class="toolbar"><input id="birthQ" placeholder="🔎 Brinco, mãe, pai..." oninput="renderBirths()"><select id="birthYear" onchange="renderBirths()"></select><button class="btn light" type="button" onclick="birthQ.value='';birthYear.value='';renderBirths()">Mostrar todos</button></div><div class="tablewrap"><table><thead><tr><th>Data</th><th>Brinco</th><th>Sexo</th><th>Peso</th><th>Pai</th><th>Mãe</th><th>Inseminador</th><th>Situação</th><th>Obs.</th><th>Ações</th></tr></thead><tbody id="birthRows"></tbody></table></div></section>
-<section id="iatf" class="section"><div class="top"><div><h1>IATF / Reprodução</h1><div class="muted">Data do DG, taxa por inseminador e taxa por touro/sêmen.</div></div><button class="btn primary" onclick="openForm('iatf')">+ Nova IATF</button></div><div class="grid" id="iatfMetrics"></div><div class="toolbar"><input id="iatfQ" placeholder="🔎 Brinco, touro, inseminador..." oninput="renderIatf()"><select id="iatfYear" onchange="renderIatf()"></select></div><div class="card" style="margin-bottom:13px"><h3>Desempenho por inseminador</h3><div class="tablewrap"><table><thead><tr><th>Inseminador</th><th>IATFs</th><th>Prenhes</th><th>Vazias</th><th>DG</th><th>Taxa</th></tr></thead><tbody id="insTable"></tbody></table></div></div><div class="card" style="margin-bottom:13px"><h3>Desempenho por touro / sêmen</h3><div class="tablewrap"><table><thead><tr><th>Touro/Sêmen</th><th>IATFs</th><th>Prenhes</th><th>Vazias</th><th>DG</th><th>Taxa</th></tr></thead><tbody id="bullTable"></tbody></table></div></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>IATF</th><th>Repasse</th><th>DG</th><th>Resultado</th><th>Touro/Sêmen</th><th>Inseminador</th><th>Protocolo</th><th>Parto previsto</th><th>Ações</th></tr></thead><tbody id="iatfRows"></tbody></table></div></section>
-<section id="diagnosticos" class="section"><div class="top"><div><h1>Diagnósticos</h1><div class="muted">Diagnóstico reprodutivo das matrizes: Prenhe ou Vazia.</div></div><button class="btn primary" onclick="openForm('diagnostico')">+ Novo diagnóstico</button></div><div class="grid" id="diagnosticoMetrics"></div><div class="toolbar"><input id="diagnosticoQ" placeholder="🔎 Brinco, resultado, tipo, inseminador..." oninput="renderDiagnosticos()"></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Data</th><th>Resultado</th><th>Prenhe de (dias)</th><th>Dias Vazia</th><th>Previsão de parto</th><th>Tipo</th><th>Inseminador</th><th>Touro/Sêmen</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="diagnosticoRows"></tbody></table></div></section>
+<section id="iatf" class="section"><div class="top"><div><h1>IATF / Reprodução</h1><div class="muted">Data do DG, taxa por inseminador e taxa por touro/sêmen.</div></div><button class="btn primary" onclick="openForm('iatf')">+ Nova IATF</button></div><div class="grid" id="iatfMetrics"></div><div class="toolbar"><input id="iatfQ" placeholder="🔎 Brinco, touro, inseminador..." oninput="renderIatf()"><select id="iatfYear" onchange="renderIatf()"></select></div><div class="card" style="margin-bottom:13px"><h3>Desempenho por inseminador</h3><div class="tablewrap"><table><thead><tr><th>Inseminador</th><th>IATFs</th><th>Prenhes</th><th>Vazias</th><th>DG</th><th>Taxa</th></tr></thead><tbody id="insTable"></tbody></table></div></div><div class="card" style="margin-bottom:13px"><h3>Desempenho por touro / sêmen</h3><div class="tablewrap"><table><thead><tr><th>Touro/Sêmen</th><th>IATFs</th><th>Prenhes</th><th>Vazias</th><th>DG</th><th>Taxa</th></tr></thead><tbody id="bullTable"></tbody></table></div></div><div class="card" style="margin-bottom:13px"><h3>Consumo de sêmen por touro</h3><div class="tablewrap"><table><thead><tr><th>Touro/Sêmen</th><th>Doses usadas</th><th>IATF</th><th>Repasse</th></tr></thead><tbody id="semenUsageTable"></tbody></table></div></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>IATF</th><th>Repasse</th><th>DG</th><th>Resultado</th><th>Touro/Sêmen</th><th>Inseminador</th><th>Protocolo</th><th>Parto previsto</th><th>Ações</th></tr></thead><tbody id="iatfRows"></tbody></table></div></section>
+  <section id="diagnosticos" class="section"><div class="top"><div><h1>Diagnósticos</h1><div class="muted">Diagnóstico reprodutivo das matrizes: Prenhe ou Vazia.</div></div><button class="btn primary" onclick="openForm('diagnostico')">+ Novo diagnóstico</button></div><div class="grid" id="diagnosticoMetrics"></div><div class="toolbar"><input id="diagnosticoQ" placeholder="🔎 Brinco, resultado, tipo, inseminador..." oninput="renderDiagnosticos()"></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Data</th><th>Resultado</th><th>Prenhe de (dias)</th><th>Dias Vazia</th><th>Previsão de parto</th><th>Tipo</th><th>Inseminador</th><th>Touro/Sêmen</th><th>Observação</th><th>Ações</th></tr></thead><tbody id="diagnosticoRows"></tbody></table></div></section>
 <section id="prenhas" class="section"><div class="top"><div><h1>Prenhas</h1><div class="muted">Matrizes atualmente prenhes, conforme o diagnóstico mais recente.</div></div></div><div class="grid" id="prenhasMetrics"></div><div class="toolbar"><input id="prenhasQ" placeholder="🔎 Brinco, touro, inseminador..." oninput="renderPrenhas()"></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Data do diagnóstico</th><th>Prenhe de (dias)</th><th>Previsão de parto</th><th>Tipo</th><th>Inseminador</th><th>Touro/Sêmen</th><th>Observação</th></tr></thead><tbody id="prenhasRows"></tbody></table></div></section>
  <section id="vazias" class="section"><div class="top"><div><h1>Vazias</h1><div class="muted">Matrizes atualmente vazias, conforme o diagnóstico mais recente.</div></div></div><div class="grid" id="vaziasMetrics"></div><div class="toolbar"><input id="vaziasQ" placeholder="🔎 Brinco, tipo, inseminador..." oninput="renderVazias()"></div><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Data do diagnóstico</th><th>Dias Vazia</th><th>Tipo</th><th>Inseminador</th><th>Touro/Sêmen</th><th>Observação</th></tr></thead><tbody id="vaziasRows"></tbody></table></div></section>
  <section id="manejo" class="section">
@@ -935,19 +935,46 @@ function renderIatf(){
 
   try{perfTables(a)}catch(e){}
 
+  let consumo={};
+
+  a.forEach(x=>{
+    let touro=(x.touro||'').toString().trim();
+
+    if(touro){
+      if(!consumo[touro])consumo[touro]={iatf:0,repasse:0};
+      consumo[touro].iatf++;
+    }
+
+    let repasse=(x.repasseTouro||'').toString().trim();
+
+    if(repasse){
+      if(!consumo[repasse])consumo[repasse]={iatf:0,repasse:0};
+      consumo[repasse].repasse++;
+    }
+  });
+
+  semenUsageTable.innerHTML=Object.entries(consumo).map(([k,v])=>`
+    <tr>
+      <td><b>${esc(k)}</b></td>
+      <td>${v.iatf+v.repasse}</td>
+      <td>${v.iatf}</td>
+      <td>${v.repasse}</td>
+    </tr>
+  `).join('')||'<tr><td colspan="4">Sem dados.</td></tr>';
+
   iatfRows.innerHTML=a.map(x=>`<tr>
     <td><b>${esc(x.brinco)}</b></td>
     <td>${fmtDate(x.iatf)}</td>
     <td>${fmtDate(x.repasseData)}</td>
     <td>${fmtDate(x.dg)}</td>
     <td><span class="status ${/^prenhe$/i.test(x.resultado)?'ok':/^vazia$/i.test(x.resultado)?'dead':'warn'}">${esc(x.resultado||'Pendente')}</span></td>
-<td>${esc(x.repasseTouro || x.touro)}</td>
-<td>${esc(x.inseminador)}</td>
+    <td>${esc(x.repasseTouro || x.touro)}</td>
+    <td>${esc(x.inseminador)}</td>
     <td>${esc(x.protocolo)}</td>
     <td>${fmtDate(previsaoParto(x))}</td>
     <td>
-<button class="btn light" onclick="editIatf(${DB.iatf.indexOf(x)})">Editar</button>
-<button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
+      <button class="btn light" onclick="editIatf(${DB.iatf.indexOf(x)})">Editar</button>
+      <button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
     </td>
   </tr>`).join('')
 }
