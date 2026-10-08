@@ -933,7 +933,7 @@ function renderIatf(){
     metric('Taxa geral',pct(p,dg),'sobre DG')
   ].join('');
 
-  try{perfTables(a)}catch(e){}
+renderIatfReport(a);
 
   let consumo={};
 
@@ -977,6 +977,398 @@ function renderIatf(){
       <button class="btn danger" onclick="deleteRecord('iatf',${DB.iatf.indexOf(x)})">Excluir</button>
     </td>
   </tr>`).join('')
+}
+  function renderIatfReport(a){
+  let antigo=document.getElementById('iatfReport');
+  if(antigo)antigo.remove();
+
+  let total=a.length;
+  let dg=a.filter(x=>x.dg&&x.resultado).length;
+  let prenhe=a.filter(x=>/^prenhe$/i.test(x.resultado)).length;
+  let vazia=a.filter(x=>/^vazia$/i.test(x.resultado)).length;
+  let pendente=a.filter(x=>!x.resultado||!x.dg).length;
+  let repasses=a.filter(x=>x.repasseData||x.repasseTouro).length;
+  let diretas=Math.max(0,total-repasses);
+
+  let taxa=dg?Math.round((prenhe/dg)*100):0;
+  let taxaDireta=total?Math.round((diretas/total)*100):0;
+  let taxaRepasse=total?Math.round((repasses/total)*100):0;
+
+  function grupo(key){
+    let m={};
+
+    a.forEach(x=>{
+      let nome=(x[key]||'Não informado').toString().trim()||'Não informado';
+
+      if(!m[nome])m[nome]={total:0,dg:0,p:0,v:0,repasse:0};
+
+      m[nome].total++;
+
+      if(x.dg&&x.resultado)m[nome].dg++;
+      if(/^prenhe$/i.test(x.resultado))m[nome].p++;
+      if(/^vazia$/i.test(x.resultado))m[nome].v++;
+      if(x.repasseData||x.repasseTouro)m[nome].repasse++;
+    });
+
+    return m;
+  }
+
+  let inseminadores=grupo('inseminador');
+  let touros=grupo('touro');
+
+  let consumo={};
+
+  a.forEach(x=>{
+    let t=(x.touro||'').toString().trim();
+
+    if(t){
+      if(!consumo[t])consumo[t]={iatf:0,repasse:0};
+      consumo[t].iatf++;
+    }
+
+    let r=(x.repasseTouro||'').toString().trim();
+
+    if(r){
+      if(!consumo[r])consumo[r]={iatf:0,repasse:0};
+      consumo[r].repasse++;
+    }
+  });
+
+  let consumoLista=Object.entries(consumo)
+    .map(([nome,v])=>({
+      nome,
+      total:v.iatf+v.repasse,
+      iatf:v.iatf,
+      repasse:v.repasse
+    }))
+    .sort((a,b)=>b.total-a.total);
+
+  let insLista=Object.entries(inseminadores)
+    .map(([nome,v])=>({
+      nome,
+      ...v,
+      taxa:v.dg?(v.p/v.dg)*100:0
+    }))
+    .sort((a,b)=>b.taxa-a.taxa);
+
+  let touroLista=Object.entries(touros)
+    .map(([nome,v])=>({
+      nome,
+      ...v,
+      taxa:v.dg?(v.p/v.dg)*100:0
+    }))
+    .sort((a,b)=>b.taxa-a.taxa);
+
+  let meses={};
+
+  a.forEach(x=>{
+    if(!x.dg||!x.resultado)return;
+
+    let d=new Date(String(x.dg).includes('T')?x.dg:x.dg+'T12:00:00');
+    if(isNaN(d))return;
+
+    let chave=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+
+    if(!meses[chave])meses[chave]={total:0,p:0};
+
+    meses[chave].total++;
+    if(/^prenhe$/i.test(x.resultado))meses[chave].p++;
+  });
+
+  let mesesLista=Object.entries(meses)
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([mes,v])=>({
+      mes,
+      taxa:v.total?Math.round((v.p/v.total)*100):0,
+      p:v.p,
+      total:v.total
+    }));
+
+  let pieTotal=prenhe+vazia+pendente;
+
+  let p1=pieTotal?(prenhe/pieTotal)*100:0;
+  let p2=pieTotal?(vazia/pieTotal)*100:0;
+
+  let pie=`conic-gradient(
+    #22c55e 0% ${p1}%,
+    #ef4444 ${p1}% ${p1+p2}%,
+    #f59e0b ${p1+p2}% 100%
+  )`;
+
+  function barra(lista){
+    if(!lista.length)return '<div style="padding:20px;text-align:center;color:#888">Sem dados.</div>';
+
+    let maior=Math.max(...lista.map(x=>x.taxa),1);
+
+    return lista.slice(0,8).map(x=>`
+      <div style="margin:0 0 15px">
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:5px">
+          <b style="font-size:13px">${esc(x.nome)}</b>
+          <span style="font-weight:700">${Math.round(x.taxa)}%</span>
+        </div>
+
+        <div style="height:10px;background:#e9edf2;border-radius:20px;overflow:hidden">
+          <div style="
+            height:100%;
+            width:${Math.max(3,(x.taxa/maior)*100)}%;
+            background:linear-gradient(90deg,#2563eb,#60a5fa);
+            border-radius:20px;
+          "></div>
+        </div>
+
+        <div style="font-size:11px;color:#888;margin-top:4px">
+          ${x.total} IATF · ${x.p} prenhes · ${x.v} vazias · ${x.dg} DG
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function barraConsumo(){
+    if(!consumoLista.length)return '<div style="padding:20px;text-align:center;color:#888">Sem dados.</div>';
+
+    let maior=Math.max(...consumoLista.map(x=>x.total),1);
+
+    return consumoLista.slice(0,10).map(x=>`
+      <div style="margin:0 0 14px">
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:5px">
+          <b style="font-size:13px">${esc(x.nome)}</b>
+          <b>${x.total} doses</b>
+        </div>
+
+        <div style="height:12px;background:#e9edf2;border-radius:20px;overflow:hidden">
+          <div style="
+            height:100%;
+            width:${Math.max(3,(x.total/maior)*100)}%;
+            background:linear-gradient(90deg,#7c3aed,#a78bfa);
+            border-radius:20px;
+          "></div>
+        </div>
+
+        <div style="font-size:11px;color:#888;margin-top:4px">
+          IATF: ${x.iatf} · Repasse: ${x.repasse}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function linhaMes(){
+    if(!mesesLista.length){
+      return '<div style="padding:20px;text-align:center;color:#888">Ainda não há DG suficiente para montar a evolução.</div>';
+    }
+
+    let largura=700;
+    let altura=230;
+    let margem=35;
+
+    let pontos=mesesLista.map((x,i)=>{
+      let px=mesesLista.length===1
+        ? largura/2
+        : margem+i*((largura-margem*2)/(mesesLista.length-1));
+
+      let py=altura-margem-(x.taxa/100)*(altura-margem*2);
+
+      return {x:px,y:py,...x};
+    });
+
+    let path=pontos.map((p,i)=>(i?'L':'M')+p.x+' '+p.y).join(' ');
+
+    return `
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 ${largura} ${altura}" style="width:100%;min-width:500px;height:240px">
+          <line x1="${margem}" y1="${altura-margem}" x2="${largura-margem}" y2="${altura-margem}" stroke="#dfe4ea"/>
+          <line x1="${margem}" y1="${margem}" x2="${margem}" y2="${altura-margem}" stroke="#dfe4ea"/>
+
+          <text x="5" y="${margem+5}" font-size="11" fill="#888">100%</text>
+          <text x="15" y="${altura/2}" font-size="11" fill="#888">50%</text>
+          <text x="22" y="${altura-margem}" font-size="11" fill="#888">0%</text>
+
+          <path d="${path}" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+          ${pontos.map(p=>`
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#2563eb"/>
+            <text x="${p.x}" y="${p.y-10}" text-anchor="middle" font-size="11" font-weight="700" fill="#222">${p.taxa}%</text>
+            <text x="${p.x}" y="${altura-10}" text-anchor="middle" font-size="10" fill="#777">${p.mes}</text>
+          `).join('')}
+        </svg>
+      </div>
+    `;
+  }
+
+  let box=document.createElement('div');
+  box.id='iatfReport';
+
+  box.innerHTML=`
+    <div style="
+      margin:18px 0;
+      padding:20px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#f8fafc,#eef3f8);
+      border:1px solid #e1e7ef;
+    ">
+
+      <div style="margin-bottom:18px">
+        <h2 style="margin:0 0 4px">📊 Relatório de Reprodução</h2>
+        <div style="font-size:13px;color:#6b7280">
+          Análise das IATFs do período selecionado
+        </div>
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+        gap:12px;
+        margin-bottom:18px;
+      ">
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">IATFs</div>
+          <div style="font-size:28px;font-weight:800">${total}</div>
+        </div>
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">Prenhes</div>
+          <div style="font-size:28px;font-weight:800;color:#16a34a">${prenhe}</div>
+        </div>
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">Vazias</div>
+          <div style="font-size:28px;font-weight:800;color:#dc2626">${vazia}</div>
+        </div>
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">Taxa de prenhez</div>
+          <div style="font-size:28px;font-weight:800">${taxa}%</div>
+        </div>
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">Repasse</div>
+          <div style="font-size:28px;font-weight:800">${repasses}</div>
+        </div>
+
+        <div style="background:white;padding:16px;border-radius:12px;border:1px solid #e5e7eb">
+          <div style="font-size:12px;color:#777">Pendências</div>
+          <div style="font-size:28px;font-weight:800;color:#d97706">${pendente}</div>
+        </div>
+
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+        gap:15px;
+      ">
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">Resultado das IATFs</h3>
+
+          <div style="display:flex;align-items:center;justify-content:center;gap:25px;flex-wrap:wrap">
+
+            <div style="
+              width:180px;
+              height:180px;
+              border-radius:50%;
+              background:${pie};
+              position:relative;
+              box-shadow:0 4px 15px rgba(0,0,0,.08);
+            ">
+              <div style="
+                position:absolute;
+                inset:42px;
+                background:white;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                text-align:center;
+                font-weight:800;
+                font-size:18px;
+              ">${pieTotal}<br><span style="font-size:10px;color:#777">RESULTADOS</span></div>
+            </div>
+
+            <div style="font-size:13px;line-height:2">
+              <div>🟢 Prenhe: <b>${prenhe}</b></div>
+              <div>🔴 Vazia: <b>${vazia}</b></div>
+              <div>🟠 Pendente: <b>${pendente}</b></div>
+            </div>
+
+          </div>
+        </div>
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">IATF direta × Repasse</h3>
+
+          <div style="display:flex;gap:12px;margin-bottom:15px">
+            <div style="flex:1;padding:15px;background:#eff6ff;border-radius:10px;text-align:center">
+              <div style="font-size:12px;color:#666">Direta</div>
+              <b style="font-size:25px">${diretas}</b>
+              <div style="font-size:11px">${taxaDireta}% das IATFs</div>
+            </div>
+
+            <div style="flex:1;padding:15px;background:#faf5ff;border-radius:10px;text-align:center">
+              <div style="font-size:12px;color:#666">Repasse</div>
+              <b style="font-size:25px">${repasses}</b>
+              <div style="font-size:11px">${taxaRepasse}% das IATFs</div>
+            </div>
+          </div>
+
+          <div style="height:18px;background:#e5e7eb;border-radius:20px;overflow:hidden;display:flex">
+            <div style="width:${total?(diretas/total)*100:0}%;background:#2563eb"></div>
+            <div style="width:${total?(repasses/total)*100:0}%;background:#7c3aed"></div>
+          </div>
+        </div>
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">Desempenho por inseminador</h3>
+          ${barra(insLista)}
+        </div>
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">Desempenho por touro / sêmen</h3>
+          ${barra(touroLista)}
+        </div>
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">Consumo de sêmen</h3>
+          ${barraConsumo()}
+        </div>
+
+        <div style="background:white;padding:18px;border-radius:14px;border:1px solid #e5e7eb">
+          <h3 style="margin:0 0 15px">Evolução da taxa de prenhez</h3>
+          ${linhaMes()}
+        </div>
+
+      </div>
+
+      <div style="
+        margin-top:15px;
+        padding:15px;
+        background:white;
+        border:1px solid #e5e7eb;
+        border-radius:14px;
+      ">
+        <h3 style="margin:0 0 10px">🏆 Melhor desempenho</h3>
+
+        ${
+          insLista.length
+          ? `<b>Inseminador:</b> ${esc(insLista[0].nome)} — ${Math.round(insLista[0].taxa)}% de prenhez`
+          : 'Ainda não há dados suficientes.'
+        }
+
+        ${
+          touroLista.length
+          ? `<br><b>Touro/Sêmen:</b> ${esc(touroLista[0].nome)} — ${Math.round(touroLista[0].taxa)}% de prenhez`
+          : ''
+        }
+      </div>
+
+    </div>
+  `;
+
+  let primeiroCard=document.querySelector('#iatf .card');
+
+  if(primeiroCard){
+    primeiroCard.parentNode.insertBefore(box,primeiroCard);
+  }
 }
   function editIatf(i){
   if(i<0 || i>=DB.iatf.length)return;
