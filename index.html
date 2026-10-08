@@ -933,7 +933,11 @@ function renderIatf(){
     metric('Taxa geral',pct(p,dg),'sobre DG')
   ].join('');
 
-renderIatfReport(a);
+try{
+  renderIatfReport(a);
+}catch(e){
+  console.error('Erro no relatório IATF:',e);
+}
 
   let consumo={};
 
