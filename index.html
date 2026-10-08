@@ -1271,7 +1271,12 @@ let pie=`conic-gradient(
   width:190px;
   height:190px;
   border-radius:50%;
-  background:${pie};
+  background:conic-gradient(
+  from -90deg,
+  #22c55e 0% ${p1}%,
+  #ef4444 ${p1}% ${p1+p2}%,
+  #f59e0b ${p1+p2}% 100%
+);
   position:relative;
   box-shadow:0 8px 25px rgba(0,0,0,.12);
   display:flex;
