@@ -385,6 +385,140 @@ html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden!importa
     page-break-inside:avoid!important;
   }
 }
+
+
+#reportArea{
+  background:#ffffff;
+  border-radius:18px;
+  padding:26px!important;
+  color:#18231d;
+}
+
+#reportArea h3{
+  margin-top:24px!important;
+  margin-bottom:14px!important;
+  padding:10px 14px;
+  border-left:4px solid #21864b;
+  background:linear-gradient(90deg,#f0f7f2,#fff);
+  border-radius:8px;
+  color:#173d2b;
+  font-size:17px;
+}
+
+#reportArea h4{
+  margin:20px 0 10px!important;
+  color:#294a36;
+  font-size:14px;
+}
+
+#reportArea .detailgrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin:12px 0 18px;
+}
+
+#reportArea .detailgrid>div{
+  background:linear-gradient(145deg,#ffffff,#f4f8f5);
+  border:1px solid #dfe8e2;
+  border-radius:14px;
+  padding:15px;
+  box-shadow:0 3px 10px rgba(24,60,40,.06);
+  min-height:58px;
+}
+
+#reportArea .detailgrid small{
+  color:#718078;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+
+#reportArea .detailgrid b{
+  display:block;
+  margin-top:6px;
+  font-size:21px;
+  color:#173d2b;
+}
+
+#reportArea .tablewrap{
+  border:1px solid #dfe7e1;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(20,50,30,.05);
+  margin-bottom:18px;
+}
+
+#reportArea table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+
+#reportArea th{
+  background:#173d2b!important;
+  color:#fff!important;
+  border:none!important;
+  padding:9px 10px!important;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+#reportArea td{
+  padding:8px 10px!important;
+  border-bottom:1px solid #edf1ee!important;
+  font-size:10px;
+}
+
+#reportArea tbody tr:nth-child(even){
+  background:#f7faf8;
+}
+
+#reportArea tbody tr:last-child td{
+  border-bottom:none!important;
+}
+
+#reportArea .report-head{
+  padding-bottom:16px!important;
+  margin-bottom:20px!important;
+  border-bottom:2px solid #21864b!important;
+}
+
+#reportArea .report-head h2{
+  margin:0 0 5px!important;
+  font-size:22px!important;
+  color:#173d2b;
+  letter-spacing:-.3px;
+}
+
+#reportArea .report-head small{
+  font-size:10px;
+  line-height:1.5;
+}
+
+@media print{
+  #reportArea{
+    padding:20px!important;
+    box-shadow:none!important;
+  }
+
+  #reportArea .detailgrid>div{
+    box-shadow:none!important;
+  }
+
+  #reportArea .tablewrap{
+    box-shadow:none!important;
+  }
+
+  #reportArea h3{
+    break-after:avoid;
+    page-break-after:avoid;
+  }
+}
+
+
+/* ===== MOBILE — Cabanha Piterini ===== */
 /* ===== MOBILE — Cabanha Piterini ===== */
 @media (max-width:1000px){
 
