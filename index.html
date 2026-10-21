@@ -2025,7 +2025,72 @@ ${reportPerf(groupPerf(i,'inseminador'))}
 <h4>Por touro/sêmen</h4>
 ${reportPerf(groupPerf(i,'touro'))}
 ${reportBarChart(groupPerf(i,'touro'),'IATFs por touro / sêmen')}`;
-if(type==='completo'||type==='geral'||type==='financeiro')html+=`<h3 style="margin-top:16px">💰 Financeiro</h3><div class="detailgrid"><div><small>Vendas</small><b>${s.length}</b></div><div><small>Receita</small><b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div><div><small>Gastos</small><b>${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div><div><small>Saldo vendas - gastos</small><b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0)-e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div></div>`;
+if(type==='completo'||type==='geral'||type==='financeiro')html+=`
+<h3 style="margin-top:18px">💰 Financeiro</h3>
+
+<div class="detailgrid">
+  <div>
+    <small>Vendas realizadas</small>
+    <b>${s.length}</b>
+  </div>
+
+  <div>
+    <small>Receita total</small>
+    <b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b>
+  </div>
+
+  <div>
+    <small>Total de gastos</small>
+    <b>${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b>
+  </div>
+
+  <div>
+    <small>Saldo líquido</small>
+    <b>${money(
+      s.reduce((a,x)=>a+(Number(x.valor)||0),0)
+      -
+      e.reduce((a,x)=>a+(Number(x.valor)||0),0)
+    )}</b>
+  </div>
+</div>
+
+<div style="
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:14px;
+">
+
+  <div style="
+    padding:16px;
+    border-radius:14px;
+    background:#f1f8f3;
+    border:1px solid #d7e8dc;
+  ">
+    <div style="font-size:11px;color:#718078;text-transform:uppercase;font-weight:700">
+      💵 Receita
+    </div>
+    <div style="font-size:25px;font-weight:800;color:#176b3a;margin-top:5px">
+      ${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}
+    </div>
+  </div>
+
+  <div style="
+    padding:16px;
+    border-radius:14px;
+    background:#fff7f7;
+    border:1px solid #f0dddd;
+  ">
+    <div style="font-size:11px;color:#8b7777;text-transform:uppercase;font-weight:700">
+      💸 Gastos
+    </div>
+    <div style="font-size:25px;font-weight:800;color:#c52d2d;margin-top:5px">
+      ${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}
+    </div>
+  </div>
+
+</div>
+`;
 if(type==='completo'||type==='geral'||type==='sanidade')html+=`<h3 style="margin-top:16px">💉 Sanidade e remédios</h3><div class="detailgrid"><div><small>Registros de sanidade</small><b>${h.length}</b></div><div><small>Medicamentos</small><b>${m.length}</b></div></div>`;
 if(type==='completo'){
 html+=`<h3 style="margin-top:18px">🐄 Matrizes / Mães</h3><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Filhos</th><th>Vivos</th><th>Mortos</th><th>IATF</th><th>Touro/Sêmen</th><th>Inseminador</th><th>DG</th><th>Resultado</th></tr></thead><tbody>${DB.mothers.map(x=>{let a=x.iatf||{};return `<tr><td>${esc(x.brinco)}</td><td>${x.filhos||0}</td><td>${x.filhos_vivos||0}</td><td>${x.filhos_mortos||0}</td><td>${x.fez_iatf?'SIM':'NÃO'}</td><td>${esc(a.touro)}</td><td>${esc(a.inseminador)}</td><td>${esc(a.dg)}</td><td>${esc(a.resultado)}</td></tr>`}).join('')}</tbody></table></div>`;
