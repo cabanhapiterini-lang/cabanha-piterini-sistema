@@ -2054,41 +2054,78 @@ if(type==='completo'||type==='geral'||type==='financeiro')html+=`
   </div>
 </div>
 
-<div style="
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-  margin-top:14px;
-">
+<h4>💵 Vendas realizadas</h4>
 
-  <div style="
-    padding:16px;
-    border-radius:14px;
-    background:#f1f8f3;
-    border:1px solid #d7e8dc;
-  ">
-    <div style="font-size:11px;color:#718078;text-transform:uppercase;font-weight:700">
-      💵 Receita
-    </div>
-    <div style="font-size:25px;font-weight:800;color:#176b3a;margin-top:5px">
-      ${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}
-    </div>
-  </div>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+  <th>Data</th>
+  <th>Brinco</th>
+  <th>Sexo</th>
+  <th>Peso</th>
+  <th>R$/kg</th>
+  <th>Valor</th>
+  <th>Comprador</th>
+  <th>Observação</th>
+</tr>
+</thead>
 
-  <div style="
-    padding:16px;
-    border-radius:14px;
-    background:#fff7f7;
-    border:1px solid #f0dddd;
-  ">
-    <div style="font-size:11px;color:#8b7777;text-transform:uppercase;font-weight:700">
-      💸 Gastos
-    </div>
-    <div style="font-size:25px;font-weight:800;color:#c52d2d;margin-top:5px">
-      ${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}
-    </div>
-  </div>
+<tbody>
+${s.map(x=>`
+<tr>
+  <td>${fmtDate(x.data)}</td>
+  <td>${esc(x.brinco||'—')}</td>
+  <td>${esc(x.sexo||'—')}</td>
+  <td>${esc(x.peso||'—')}</td>
+  <td>${money(x.preco)}</td>
+  <td><b>${money(x.valor)}</b></td>
+  <td>${esc(x.comprador||'—')}</td>
+  <td>${esc(x.obs||'—')}</td>
+</tr>
+`).join('') || `
+<tr>
+  <td colspan="8">Nenhuma venda registrada no período.</td>
+</tr>
+`}
+</tbody>
+</table>
+</div>
 
+<h4>💸 Gastos realizados</h4>
+
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+  <th>Data</th>
+  <th>Categoria</th>
+  <th>Descrição</th>
+  <th>Fornecedor</th>
+  <th>Valor</th>
+  <th>Pagamento</th>
+  <th>Observação</th>
+</tr>
+</thead>
+
+<tbody>
+${e.map(x=>`
+<tr>
+  <td>${fmtDate(x.data)}</td>
+  <td>${esc(x.categoria||'—')}</td>
+  <td>${esc(x.descricao||'—')}</td>
+  <td>${esc(x.fornecedor||'—')}</td>
+  <td><b>${money(x.valor)}</b></td>
+  <td>${esc(x.pagamento||'—')}</td>
+  <td>${esc(x.obs||'—')}</td>
+</tr>
+`).join('') || `
+<tr>
+  <td colspan="7">Nenhum gasto registrado no período.</td>
+</tr>
+`}
+</tbody>
+</table>
 </div>
 `;
 if(type==='completo'||type==='geral'||type==='sanidade')html+=`<h3 style="margin-top:16px">💉 Sanidade e remédios</h3><div class="detailgrid"><div><small>Registros de sanidade</small><b>${h.length}</b></div><div><small>Medicamentos</small><b>${m.length}</b></div></div>`;
