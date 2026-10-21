@@ -2024,7 +2024,7 @@ ${reportPerf(groupPerf(i,'inseminador'))}
 
 <h4>Por touro/sêmen</h4>
 ${reportPerf(groupPerf(i,'touro'))}
-${reportBarChart(groupPerf(i,'touro'),'IATFs por touro / sêmen')}${reportBarChart(groupPerf(i,'touro'),'IATFs por touro / sêmen')}`;
+${reportBarChart(groupPerf(i,'touro'),'IATFs por touro / sêmen')}`;
 if(type==='completo'||type==='geral'||type==='financeiro')html+=`<h3 style="margin-top:16px">💰 Financeiro</h3><div class="detailgrid"><div><small>Vendas</small><b>${s.length}</b></div><div><small>Receita</small><b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div><div><small>Gastos</small><b>${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div><div><small>Saldo vendas - gastos</small><b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0)-e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b></div></div>`;
 if(type==='completo'||type==='geral'||type==='sanidade')html+=`<h3 style="margin-top:16px">💉 Sanidade e remédios</h3><div class="detailgrid"><div><small>Registros de sanidade</small><b>${h.length}</b></div><div><small>Medicamentos</small><b>${m.length}</b></div></div>`;
 if(type==='completo'){
