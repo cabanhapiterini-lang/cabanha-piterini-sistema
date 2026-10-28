@@ -897,7 +897,15 @@ async function save(){
     localStorage.setItem(REPORTKEY,JSON.stringify(REPORTS));
     setSaveStatus('wait','Salvando na nuvem...','Enviando os dados para o Supabase.');
    if(!CLOUD_READY && CURRENT?.authUserId) await loadCloudState();
-if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
+if(!CURRENT?.authUserId){
+  const {data:sessionData}=await SB.auth.getSession();
+  if(sessionData?.session?.user){
+    CURRENT={...CURRENT,authUserId:sessionData.session.user.id,email:sessionData.session.user.email};
+  }else{
+    throw new Error('Não foi encontrada uma sessão de usuário ativa no Supabase.');
+  }
+}
+CLOUD_READY=true;
     const now=new Date().toISOString();
     const payload={
   user_id:CURRENT.authUserId,
