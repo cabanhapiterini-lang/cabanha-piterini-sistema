@@ -2060,25 +2060,12 @@ else if(MODAL_TYPE==='health'){if(edit==='health'&&index>=0)DB.health[index]=o;e
 }
 else if(MODAL_TYPE==='event'){if(edit==='event'&&index>=0)DB.events[index]=o;else DB.events.push(o)}
 else if(MODAL_TYPE==='animal'){DB.animals=DB.animals||[];if(edit==='animal'&&index>=0)DB.animals[index]={...DB.animals[index],...o};else{if(DB.animals.some(x=>String(x.brinco)===String(o.brinco))||DB.mothers.some(x=>String(x.brinco)===String(o.brinco)))return alert('Esse brinco já existe no sistema.');DB.animals.push({...o,status:'Ativo',filhos:0,filhos_vivos:0,filhos_mortos:0,fez_iatf:false})}}
-        else if(MODAL_TYPE==='descarte'){
+      else if(MODAL_TYPE==='descarte'){
   let brincoBusca=String(o.brinco||'').trim().replace(/^0+/,'')||'0';
   let m=DB.mothers.find(x=>(String(x.brinco||'').trim().replace(/^0+/,'')||'0')===brincoBusca);
   if(!m){
     DB.animals=DB.animals||[];
     m=DB.animals.find(x=>(String(x.brinco||'').trim().replace(/^0+/,'')||'0')===brincoBusca);
-  }
-  if(!m)return alert('Matriz não encontrada.');
-  if(!o.data)return alert('Informe a data do descarte.');
-  if(!o.motivo)return alert('Informe o motivo do descarte.');
-  m.status='Descartada';
-  m.descarteData=o.data;
-  m.descarteMotivo=o.motivo;
-  m.descarteObs=o.obs||'';
-}                                                             
-  let m=DB.mothers.find(x=>String(x.brinco)===String(o.brinco));
-  if(!m){
-    DB.animals=DB.animals||[];
-    m=DB.animals.find(x=>String(x.brinco)===String(o.brinco));
   }
   if(!m)return alert('Matriz não encontrada.');
   if(!o.data)return alert('Informe a data do descarte.');
