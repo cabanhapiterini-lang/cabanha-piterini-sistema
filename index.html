@@ -896,7 +896,8 @@ async function save(){
     localStorage.setItem(USERKEY,JSON.stringify(USERS));
     localStorage.setItem(REPORTKEY,JSON.stringify(REPORTS));
     setSaveStatus('wait','Salvando na nuvem...','Enviando os dados para o Supabase.');
-    if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
+   if(!CLOUD_READY && CURRENT?.authUserId) await loadCloudState();
+if(!CLOUD_READY || !CURRENT?.authUserId) throw new Error('A conexão com o banco ainda não está pronta. Abra a aba Salvar / Sincronizar e tente novamente.');
     const now=new Date().toISOString();
     const payload={
   user_id:CURRENT.authUserId,
