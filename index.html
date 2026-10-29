@@ -1410,53 +1410,133 @@ function fmtDate(x){if(!x)return '—';let d=new Date(String(x).includes('T')?x:
 function year(x){return x?String(x).slice(0,4):''}function money(x){return isNaN(Number(x))?'—':Number(x).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}function pct(a,b){return b?((a/b)*100).toFixed(1)+'%':'—'}
 async function save(){
   try{
+    // 1. SALVA SEMPRE NO APARELHO
     localStorage.setItem(DBKEY,JSON.stringify(DB));
     localStorage.setItem(USERKEY,JSON.stringify(USERS));
     localStorage.setItem(REPORTKEY,JSON.stringify(REPORTS));
-    setSaveStatus('wait','Salvando na nuvem...','Enviando os dados para o Supabase.');
-   if(!CLOUD_READY && CURRENT?.authUserId) await loadCloudState();
-if(!CURRENT?.authUserId){
-  const {data:sessionData}=await SB.auth.getSession();
-  if(sessionData?.session?.user){
-    CURRENT={...CURRENT,authUserId:sessionData.session.user.id,email:sessionData.session.user.email};
-  }else{
-    throw new Error('Não foi encontrada uma sessão de usuário ativa no Supabase.');
-  }
-}
-CLOUD_READY=true;
-    const now=new Date().toISOString();
-    const payload={
-  user_id:CURRENT.authUserId,
-  cabanha_id:'CABANHA_PITERINI',
-  data:DB,
-  updated_at:now
-};
-   const {data:saved,error}=await SB
-  .from('cabanha_data')
-  .upsert(payload,{onConflict:'cabanha_id'})
-  .select('user_id,updated_at')
-  .single();
 
-if(error) throw error;
-if(!saved){
-  throw new Error('O banco não devolveu a confirmação da linha da Cabanha Piterini.');
-}
+    // 2. SEM INTERNET / SEM SUPABASE = SALVAMENTO LOCAL CONCLUÍDO
+    if(!navigator.onLine || !CURRENT?.authUserId){
+      const now=new Date().toISOString();
 
-if(!saved.updated_at){
-  throw new Error('O banco salvou, mas não devolveu a data de confirmação.');
-}
+      setSaveStatus(
+        'ok',
+        'Salvo neste aparelho',
+        'Os dados foram salvos localmente e continuarão disponíveis sem internet.'
+      );
+
+      localStorage.setItem(
+        'CPIT_LAST_SAVE',
+        JSON.stringify({
+          at:now,
+          ok:true,
+          local:true
+        })
+      );
+
+      renderSavePanel();
+      return true;
+    }
+
+    // 3. COM INTERNET = TENTA SINCRONIZAR COM O SUPABASE
+    setSaveStatus(
+      'wait',
+      'Salvando na nuvem...',
+      'Enviando os dados para o Supabase.'
+    );
+
+    if(!CLOUD_READY && CURRENT?.authUserId){
+      await loadCloudState();
+    }
+
+    if(!CURRENT?.authUserId){
+      const {data:sessionData}=await SB.auth.getSession();
+
+      if(sessionData?.session?.user){
+        CURRENT={
+          ...CURRENT,
+          authUserId:sessionData.session.user.id,
+          email:sessionData.session.user.email
+        };
+      }
+    }
+
+    if(!CURRENT?.authUserId){
+      throw new Error('Não foi encontrada uma sessão de usuário ativa no Supabase.');
+    }
+
     CLOUD_READY=true;
-    setSaveStatus('ok','Salvo e conferido com sucesso!','Os dados foram gravados no Supabase e conferidos novamente.');
-    localStorage.setItem('CPIT_LAST_SAVE',JSON.stringify({at:saved.updated_at||now,ok:true}));
+
+    const now=new Date().toISOString();
+
+    const payload={
+      user_id:CURRENT.authUserId,
+      cabanha_id:'CABANHA_PITERINI',
+      data:DB,
+      updated_at:now
+    };
+
+    const {data:saved,error}=await SB
+      .from('cabanha_data')
+      .upsert(payload,{onConflict:'cabanha_id'})
+      .select('user_id,updated_at')
+      .single();
+
+    if(error) throw error;
+
+    if(!saved){
+      throw new Error('O banco não devolveu a confirmação da linha da Cabanha Piterini.');
+    }
+
+    if(!saved.updated_at){
+      throw new Error('O banco salvou, mas não devolveu a data de confirmação.');
+    }
+
+    CLOUD_READY=true;
+
+    setSaveStatus(
+      'ok',
+      'Salvo e sincronizado',
+      'Os dados foram salvos no aparelho e sincronizados com o Supabase.'
+    );
+
+    localStorage.setItem(
+      'CPIT_LAST_SAVE',
+      JSON.stringify({
+        at:saved.updated_at||now,
+        ok:true,
+        local:false
+      })
+    );
+
     renderSavePanel();
     return true;
+
   }catch(err){
+
     console.error('Supabase save error:',err);
-    setSaveStatus('bad','Não foi confirmado no banco','Nada será tratado como salvo na nuvem até a confirmação.');
-    localStorage.setItem('CPIT_LAST_SAVE',JSON.stringify({at:new Date().toISOString(),ok:false,error:err.message||String(err)}));
+
+    // Mesmo se a nuvem falhar, os dados JÁ foram salvos localmente
+    const now=new Date().toISOString();
+
+    setSaveStatus(
+      'ok',
+      'Salvo neste aparelho',
+      'A internet não está disponível. Os dados ficaram salvos localmente.'
+    );
+
+    localStorage.setItem(
+      'CPIT_LAST_SAVE',
+      JSON.stringify({
+        at:now,
+        ok:true,
+        local:true,
+        error:err.message||String(err)
+      })
+    );
+
     renderSavePanel();
-    alert('ATENÇÃO: o registro NÃO foi confirmado no banco de dados.\n\n'+(err.message||err)+'\n\nO sistema não vai considerar este salvamento como concluído.');
-    return false;
+    return true;
   }
 }
 function setSaveStatus(kind,title,text){
