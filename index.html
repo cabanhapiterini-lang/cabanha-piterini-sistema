@@ -2202,8 +2202,15 @@ else if(MODAL_TYPE==='health'){if(edit==='health'&&index>=0)DB.health[index]=o;e
   if(!o.data) return alert('Informe a data do gasto.');
   if(!o.categoria) return alert('Selecione a categoria do gasto.');
   if(!o.descricao || !o.descricao.trim()) return alert('Informe a descrição do gasto.');
-  if(o.valor==='' || Number.isNaN(Number(o.valor)) || Number(o.valor)<0) return alert('Informe um valor válido para o gasto.');
-  o.valor=Number(o.valor);
+ if(o.valor==='' || o.valor==null){
+  const q=parseFloat(String(o.quantidade||'').replace(',','.'))||0;
+  const u=parseFloat(String(o.valor_unitario||'').replace(',','.'))||0;
+  o.valor=q*u;
+}else{
+  o.valor=parseFloat(String(o.valor).replace(',','.'));
+}
+
+if(Number.isNaN(o.valor) || o.valor<0) return alert('Informe um valor válido para o gasto.');
   if(edit==='expense'&&index>=0) DB.expenses[index]=o;
   else DB.expenses.push(o);
 }
