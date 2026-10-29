@@ -2481,109 +2481,178 @@ ${reportPerf(groupPerf(i,'touro'))}
 
 ${reportBarChart(groupPerf(i,'touro'),'IATFs por touro / sêmen')}
 `;
-if(type==='completo'||type==='geral'||type==='financeiro')html+=`
-<h3 style="margin-top:18px">💰 Financeiro</h3>
+if(type==='completo'||type==='geral'||type==='financeiro'){
+  const receita=s.reduce((a,x)=>a+(Number(x.valor)||0),0);
+  const gastos=e.reduce((a,x)=>a+(Number(x.valor)||0),0);
+  const resultado=receita-gastos;
+  const margem=receita>0?(resultado/receita)*100:0;
 
-<div class="detailgrid">
-  <div>
-    <small>Vendas realizadas</small>
-    <b>${s.length}</b>
+  const categorias={};
+  e.forEach(x=>{
+    const cat=x.categoria||'Outros';
+    categorias[cat]=(categorias[cat]||0)+(Number(x.valor)||0);
+  });
+
+  const categoriasOrdenadas=Object.entries(categorias)
+    .sort((a,b)=>b[1]-a[1]);
+
+  html+=`
+  <div class="finance-report">
+
+    <div style="margin-top:18px;margin-bottom:14px">
+      <h3 style="margin:0">💰 Resumo Financeiro</h3>
+      <div class="muted">Visão geral das receitas e despesas do período selecionado.</div>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin-bottom:18px;
+    ">
+
+      <div style="padding:18px;border:1px solid #dfe8e3;border-radius:14px;background:#f4faf6">
+        <small>RECEITA TOTAL</small>
+        <div style="font-size:24px;font-weight:800;color:#16834b;margin-top:5px">
+          ${money(receita)}
+        </div>
+        <small>${s.length} venda(s)</small>
+      </div>
+
+      <div style="padding:18px;border:1px solid #eadede;border-radius:14px;background:#fff7f7">
+        <small>TOTAL DE GASTOS</small>
+        <div style="font-size:24px;font-weight:800;color:#c0392b;margin-top:5px">
+          ${money(gastos)}
+        </div>
+        <small>${e.length} lançamento(s)</small>
+      </div>
+
+      <div style="padding:18px;border:1px solid #dfe8e3;border-radius:14px;background:#f7faf8">
+        <small>RESULTADO LÍQUIDO</small>
+        <div style="font-size:24px;font-weight:800;margin-top:5px;color:${resultado>=0?'#16834b':'#c0392b'}">
+          ${money(resultado)}
+        </div>
+        <small>Receita − Gastos</small>
+      </div>
+
+      <div style="padding:18px;border:1px solid #dfe8e3;border-radius:14px;background:#f7faf8">
+        <small>MARGEM</small>
+        <div style="font-size:24px;font-weight:800;margin-top:5px">
+          ${margem.toFixed(1).replace('.',',')}%
+        </div>
+        <small>Resultado / Receita</small>
+      </div>
+
+    </div>
+
+    <h4>📊 Gastos por categoria</h4>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Valor</th>
+            <th>% dos gastos</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            categoriasOrdenadas.map(([cat,valor])=>`
+              <tr>
+                <td><b>${esc(cat)}</b></td>
+                <td>${money(valor)}</td>
+                <td>${gastos>0?((valor/gastos)*100).toFixed(1).replace('.',','):'0,0'}%</td>
+              </tr>
+            `).join('')
+            ||
+            `<tr><td colspan="3">Nenhum gasto registrado no período.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h4>💵 Vendas realizadas</h4>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Brinco</th>
+            <th>Sexo</th>
+            <th>Peso</th>
+            <th>R$/kg</th>
+            <th>Valor</th>
+            <th>Comprador</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            s.map(x=>`
+              <tr>
+                <td>${fmtDate(x.data)}</td>
+                <td>${esc(x.brinco||'—')}</td>
+                <td>${esc(x.sexo||'—')}</td>
+                <td>${esc(x.peso||'—')} kg</td>
+                <td>${money(x.preco)}</td>
+                <td><b>${money(x.valor)}</b></td>
+                <td>${esc(x.comprador||'—')}</td>
+              </tr>
+            `).join('')
+            ||
+            `<tr><td colspan="7">Nenhuma venda registrada no período.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h4>💸 Gastos realizados</h4>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Categoria</th>
+            <th>Produto/Descrição</th>
+            <th>Fornecedor</th>
+            <th>Qtd.</th>
+            <th>Unidade</th>
+            <th>Valor unitário</th>
+            <th>Total</th>
+            <th>Pagamento</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            e.map(x=>`
+              <tr>
+                <td>${fmtDate(x.data)}</td>
+                <td>${esc(x.categoria||'—')}</td>
+                <td>${esc(x.descricao||'—')}</td>
+                <td>${esc(x.fornecedor||'—')}</td>
+                <td>${esc(x.quantidade||'—')}</td>
+                <td>${esc(x.unidade||'—')}</td>
+                <td>${money(
+                  x.valor_unitario!==undefined && x.valor_unitario!==''
+                    ? parseFloat(String(x.valor_unitario).replace(',','.'))
+                    : 0
+                )}</td>
+                <td><b>${money(x.valor)}</b></td>
+                <td>${esc(x.pagamento||'—')}</td>
+              </tr>
+            `).join('')
+            ||
+            `<tr><td colspan="9">Nenhum gasto registrado no período.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+
   </div>
-
-  <div>
-    <small>Receita total</small>
-    <b>${money(s.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b>
-  </div>
-
-  <div>
-    <small>Total de gastos</small>
-    <b>${money(e.reduce((a,x)=>a+(Number(x.valor)||0),0))}</b>
-  </div>
-
-  <div>
-    <small>Saldo líquido</small>
-    <b>${money(
-      s.reduce((a,x)=>a+(Number(x.valor)||0),0)
-      -
-      e.reduce((a,x)=>a+(Number(x.valor)||0),0)
-    )}</b>
-  </div>
-</div>
-
-<h4>💵 Vendas realizadas</h4>
-
-<div class="tablewrap">
-<table>
-<thead>
-<tr>
-  <th>Data</th>
-  <th>Brinco</th>
-  <th>Sexo</th>
-  <th>Peso</th>
-  <th>R$/kg</th>
-  <th>Valor</th>
-  <th>Comprador</th>
-  <th>Observação</th>
-</tr>
-</thead>
-
-<tbody>
-${s.map(x=>`
-<tr>
-  <td>${fmtDate(x.data)}</td>
-  <td>${esc(x.brinco||'—')}</td>
-  <td>${esc(x.sexo||'—')}</td>
-  <td>${esc(x.peso||'—')}</td>
-  <td>${money(x.preco)}</td>
-  <td><b>${money(x.valor)}</b></td>
-  <td>${esc(x.comprador||'—')}</td>
-  <td>${esc(x.obs||'—')}</td>
-</tr>
-`).join('') || `
-<tr>
-  <td colspan="8">Nenhuma venda registrada no período.</td>
-</tr>
-`}
-</tbody>
-</table>
-</div>
-
-<h4>💸 Gastos realizados</h4>
-
-<div class="tablewrap">
-<table>
-<thead>
-<tr>
-  <th>Data</th>
-  <th>Categoria</th>
-  <th>Descrição</th>
-  <th>Fornecedor</th>
-  <th>Valor</th>
-  <th>Pagamento</th>
-  <th>Observação</th>
-</tr>
-</thead>
-
-<tbody>
-${e.map(x=>`
-<tr>
-  <td>${fmtDate(x.data)}</td>
-  <td>${esc(x.categoria||'—')}</td>
-  <td>${esc(x.descricao||'—')}</td>
-  <td>${esc(x.fornecedor||'—')}</td>
-  <td><b>${money(x.valor)}</b></td>
-  <td>${esc(x.pagamento||'—')}</td>
-  <td>${esc(x.obs||'—')}</td>
-</tr>
-`).join('') || `
-<tr>
-  <td colspan="7">Nenhum gasto registrado no período.</td>
-</tr>
-`}
-</tbody>
-</table>
-</div>
-`;
+  `;
+}
 if(type==='completo'||type==='geral'||type==='sanidade')html+=`<h3 style="margin-top:16px">💉 Sanidade e remédios</h3><div class="detailgrid"><div><small>Registros de sanidade</small><b>${h.length}</b></div><div><small>Medicamentos</small><b>${m.length}</b></div></div>`;
 if(type==='completo'){
 html+=`<h3 style="margin-top:18px">🐄 Matrizes / Mães</h3><div class="tablewrap"><table><thead><tr><th>Brinco</th><th>Filhos</th><th>Vivos</th><th>Mortos</th><th>IATF</th><th>Touro/Sêmen</th><th>Inseminador</th><th>DG</th><th>Resultado</th></tr></thead><tbody>${DB.mothers.map(x=>{let a=x.iatf||{};return `<tr><td>${esc(x.brinco)}</td><td>${x.filhos||0}</td><td>${x.filhos_vivos||0}</td><td>${x.filhos_mortos||0}</td><td>${x.fez_iatf?'SIM':'NÃO'}</td><td>${esc(a.touro)}</td><td>${esc(a.inseminador)}</td><td>${esc(a.dg)}</td><td>${esc(a.resultado)}</td></tr>`}).join('')}</tbody></table></div>`;
