@@ -149,7 +149,46 @@
   font-size:13px;
 }
 .actions-cell{white-space:nowrap}.actions-cell .btn{margin-right:4px}.loginbox h1{margin:0;color:var(--green);font-size:22px}.loginbox p{color:var(--muted);margin:5px 0 22px}.err{height:17px;color:var(--red);font-size:11px}
-.field{text-align:left;margin-bottom:11px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}textarea{min-height:75px}.btn{
+.field{text-align:left;margin-bottom:11px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}input,
+select,
+textarea{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid #dfe6e1;
+  border-radius:11px;
+  background:#fff;
+  color:var(--ink);
+  font-size:13px;
+  outline:none;
+  transition:
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover{
+  border-color:#cbd8cf;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:#2d7a56;
+  background:#fcfefd;
+  box-shadow:0 0 0 3px rgba(45,122,86,.10);
+}
+
+input::placeholder,
+textarea::placeholder{
+  color:#9aa59e;
+}
+
+textarea{
+  min-height:80px;
+  resize:vertical;
+}.btn{
   border:0;
   border-radius:11px;
   padding:10px 15px;
