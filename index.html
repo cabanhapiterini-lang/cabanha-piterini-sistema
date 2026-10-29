@@ -2699,7 +2699,34 @@ function printReport(){
     },300);
   };
 }
-  function saveReportFile(){if(!reportArea.innerHTML.trim())return alert('Gere um relatório primeiro.');let blob=new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Relatório Cabanha Piterini</title><style>body{font-family:Arial;padding:35px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#eee}</style></head><body>${reportArea.innerHTML}</body></html>`],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Relatorio_Cabanha_Piterini_'+new Date().toISOString().slice(0,10)+'.html';a.click()}
+  function saveReportFile(){if(!reportArea.innerHTML.trim())return alert('Gere um relatório primeiro.');let blob=new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Relatório Cabanha Piterini</title><style>body{font-family:Arial;padding:35px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#eee}
+  /* ===== CORREÇÃO MENU MOBILE ===== */
+@media (max-width:700px){
+
+  body .side:not(.mobile-open){
+    display:none!important;
+    visibility:hidden!important;
+    width:0!important;
+    height:0!important;
+    overflow:hidden!important;
+  }
+
+  body .side.mobile-open{
+    display:block!important;
+    visibility:visible!important;
+    width:100%!important;
+    height:auto!important;
+    left:0!important;
+    right:0!important;
+    top:0!important;
+    bottom:68px!important;
+    position:fixed!important;
+    z-index:9998!important;
+    overflow:auto!important;
+  }
+
+}
+</style></head><body>${reportArea.innerHTML}</body></html>`],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Relatorio_Cabanha_Piterini_'+new Date().toISOString().slice(0,10)+'.html';a.click()}
 function renderManejoAlerts(){
   let alerts=[];
   let hoje=new Date();
