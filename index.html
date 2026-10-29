@@ -149,7 +149,60 @@
   font-size:13px;
 }
 .actions-cell{white-space:nowrap}.actions-cell .btn{margin-right:4px}.loginbox h1{margin:0;color:var(--green);font-size:22px}.loginbox p{color:var(--muted);margin:5px 0 22px}.err{height:17px;color:var(--red);font-size:11px}
-.field{text-align:left;margin-bottom:11px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}textarea{min-height:75px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer}.primary{background:var(--green);color:#fff}.light{background:#fff;border:1px solid var(--line)}.danger{background:#fff0f0;color:var(--red);border:1px solid #efcccc}.login .primary{width:100%;padding:12px}
+.field{text-align:left;margin-bottom:11px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}textarea{min-height:75px}.btn{
+  border:0;
+  border-radius:11px;
+  padding:10px 15px;
+  min-height:40px;
+  font-weight:750;
+  font-size:13px;
+  cursor:pointer;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    background .16s ease,
+    border-color .16s ease;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn:active{
+  transform:translateY(0);
+}
+
+.primary{
+  background:linear-gradient(135deg,#174d35,#2d7a56);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(23,77,53,.18);
+}
+
+.primary:hover{
+  box-shadow:0 7px 17px rgba(23,77,53,.25);
+}
+
+.light{
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--ink);
+  box-shadow:0 2px 6px rgba(22,44,30,.04);
+}
+
+.light:hover{
+  background:#f7faf8;
+  border-color:#ccd8cf;
+}
+
+.danger{
+  background:#fff4f4;
+  color:var(--red);
+  border:1px solid #efcccc;
+}
+
+.danger:hover{
+  background:#ffeaea;
+}.login .primary{width:100%;padding:12px}
 .app{display:none}
 
 .side{
